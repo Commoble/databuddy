@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 
-import com.github.commoble.databuddy.data.MergableJsonDataManager;
+import com.github.commoble.databuddy.data.MergeableJsonDataManager;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -16,7 +16,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class FlavorTags
 {
-	public static final MergableJsonDataManager<RawFlavorTag, Set<ResourceLocation>> DATA_LOADER = new MergableJsonDataManager<>(
+	public static final MergeableJsonDataManager<RawFlavorTag, Set<ResourceLocation>> DATA_LOADER = new MergeableJsonDataManager<>(
 		"flavors",										// folder name
 		TypeToken.get(RawFlavorTag.class).getType(),	// object type we deserialize jsons to
 		new Gson(),										// json deserializer

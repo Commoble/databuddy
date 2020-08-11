@@ -56,7 +56,7 @@ import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
-public class MergableJsonDataManager<RAW, FINE> extends ReloadListener<Map<ResourceLocation, FINE>>
+public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<ResourceLocation, FINE>>
 {
 	protected static final String JSON_EXTENSION = ".json";
 	protected static final int JSON_EXTENSION_LENGTH = JSON_EXTENSION.length();
@@ -96,7 +96,7 @@ public class MergableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Resou
 	 * @param merger
 	 * A function that converts a list of objects from multiple datapacks into a single object
 	 */
-	public MergableJsonDataManager(final String folderName, Type type, final Gson gson, final Logger logger, final Function<Stream<RAW>, FINE> merger)
+	public MergeableJsonDataManager(final String folderName, Type type, final Gson gson, final Logger logger, final Function<Stream<RAW>, FINE> merger)
 	{
 		this.folderName = folderName;
 		this.type = type;
@@ -111,7 +111,7 @@ public class MergableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Resou
 	{
 		final Map<ResourceLocation, List<JsonObject>> map = Maps.newHashMap();
 		
-		for (ResourceLocation resourceLocation : resourceManager.getAllResourceLocations(this.folderName, MergableJsonDataManager::isStringJsonFile))
+		for (ResourceLocation resourceLocation : resourceManager.getAllResourceLocations(this.folderName, MergeableJsonDataManager::isStringJsonFile))
 		{
 			final String namespace = resourceLocation.getNamespace();
 			final String filePath = resourceLocation.getPath();
@@ -156,7 +156,7 @@ public class MergableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Resou
 			map.put(jsonIdentifier, list);
 		}
 
-		return MergableJsonDataManager.mapValues(map, this::processData);
+		return MergeableJsonDataManager.mapValues(map, this::processData);
 	}
 	
 	protected FINE processData(final List<JsonObject> data)
