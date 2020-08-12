@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -50,11 +52,17 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import net.minecraft.client.resources.ReloadListener;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResource;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<ResourceLocation, FINE>>
 {
@@ -69,6 +77,7 @@ public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Reso
 	private final Gson gson;
 	private final Logger logger;
 	private final Function<Stream<RAW>, FINE> merger; // the function that merges objects from multiple datapacks into one object
+	private Optional<Runnable> syncOnReloadCallback = Optional.empty();
 	
 	/**
 	 * Initialize a data manager with the given data folder name and gson codec
@@ -103,6 +112,41 @@ public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Reso
 		this.gson = gson;
 		this.logger = logger;
 		this.merger = merger;
+	}
+	
+	/**
+	 * Subscribes to additional events to handle the syncing of the data from server to client
+	 * when players join the server or the server reloads datapacks.
+	 * Call this when you instantiate the data manager (don't call more than once per data manager instance!)
+	 * Also, this will probably cause crashes if this is invoked in a data loader that loads client assets,
+	 * so don't do that either
+	 * 
+	 * @param <PACKET> A packet type. Does not need to be registered to your channel when you call withSyncingPacket,
+	 * 	but does need to be registered to your channel by the time the server starts
+	 * @param channel A channel that the given packet type is registered to
+	 * @param packetFactory A function that produces a packet instance from the data map
+	 * @return this
+	 */
+	public <PACKET> MergeableJsonDataManager<RAW, FINE> withSyncingPacket(SimpleChannel channel,
+		Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
+	{
+		
+		MinecraftForge.EVENT_BUS.addListener(this.getLoginListener(channel, packetFactory));
+		this.syncOnReloadCallback = Optional.of(() -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data)));
+		
+		return this;
+	}
+	
+	<PACKET> Consumer<PlayerEvent.PlayerLoggedInEvent> getLoginListener(SimpleChannel channel,
+		Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
+	{
+		return event -> {
+			PlayerEntity player = event.getPlayer();
+			if (player instanceof ServerPlayerEntity)
+			{
+				channel.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity)player), packetFactory.apply(this.data));
+			}
+		};
 	}
 
 	/** Off-thread calculations (can include reading files) **/
@@ -175,6 +219,8 @@ public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Reso
 	protected void apply(final Map<ResourceLocation, FINE> processedData, final IResourceManager resourceManager, final IProfiler profiler)
 	{
 		this.data = processedData;
+		
+		this.syncOnReloadCallback.ifPresent(Runnable::run);
 	}
 
 	public static boolean isStringJsonFile(final String filename)

@@ -21,7 +21,8 @@ public class FlavorTags
 		TypeToken.get(RawFlavorTag.class).getType(),	// object type we deserialize jsons to
 		new Gson(),										// json deserializer
 		LogManager.getLogger(),
-		FlavorTags::processFlavorTags);					// data merger/processer
+		FlavorTags::processFlavorTags)					// data merger/processer
+	.withSyncingPacket(DataBuddyExampleMod.CHANNEL, FlavorTagSyncPacket::new);					
 	
 
 	
