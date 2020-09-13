@@ -14,11 +14,17 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = "${mc_version}-${mod_version}"
+version = "${mod_version}"
 group = "com.github.commoble.${modid}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "${modid}"
+archivesBaseName = "${modid}-${mc_version}"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+
+sourceSets {
+	main
+	test
+	lib
+}
 
 minecraft {
     mappings channel: 'snapshot', version: "${mappings_version}"    
@@ -32,6 +38,7 @@ minecraft {
             mods {
                 modid {
                     source sourceSets.main
+					source sourceSets.lib
                 }
             }
         }
@@ -43,6 +50,7 @@ minecraft {
             mods {
                 modid {
                     source sourceSets.main
+					source sourceSets.lib
                 }
             }
         }
@@ -63,49 +71,77 @@ minecraft {
 }
 
 repositories {
-  maven {
-    // location of the maven that hosts JEI files
-    name = "Progwml6 maven"
-    url = "https://dvs1.progwml6.com/files/maven/"
-  }
-  maven {
-    // location of a maven mirror for JEI files, as a fallback
-    name = "ModMaven"
-    url = "https://modmaven.k-4u.nl"
-  }
+	maven { url 'https://www.dogforce-games.com/maven/' }
+	maven {  url "https://maven.tterrag.com/" }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+    implementation sourceSets.lib.output
 
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
 jar {
+	from sourceSets.main.output.classesDirs
+	from sourceSets.main.output.resourcesDir
+	from sourceSets.lib.output.classesDirs
+	from sourceSets.lib.output.resourcesDir
     manifest {
         attributes([
             "Specification-Title": "${modid}",
             "Specification-Vendor": "Commoble",
             "Specification-Version": "1", // We are version 1 of ourselves
             "Implementation-Title": project.name,
-            "Implementation-Version": "${version}",
+            "Implementation-Version": "${project.version}",
             "Implementation-Vendor" :"Commoble",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+			"Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}"
         ])
     }
 }
 
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	classifier = "javadoc"
+	from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+	classifier = "sources"
+	from sourceSets.main.allJava
+	from sourceSets.lib.allJava
+}
+
+task libJar(type: Jar) {
+	classifier = "lib"
+	from sourceSets.lib.output
+	from sourceSets.lib.allJava
+}
+
+artifacts {
+	archives javadocJar
+	archives sourcesJar
+	archives libJar
+}
+
 jar.finalizedBy('reobfJar') 
 
+// run "gradlew build publish" to build jars and generate a maven repo for them
+// run "gradlew build" to build the jars without mavening them
 publishing {
     publications {
         mavenJava(MavenPublication) {
+			artifactId project.archivesBaseName
             artifact jar
+			artifact libJar
+			artifact sourcesJar
+			artifact javadocJar
         }
     }
     repositories {
         maven {
-            url "file:///${project.projectDir}/mcmodsrepo"
+			name="localMaven"
+            url "file:///${project.projectDir}/maven"
         }
     }
 }

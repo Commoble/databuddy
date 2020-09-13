@@ -24,7 +24,7 @@ SOFTWARE.
 
  */
 
-package com.github.commoble.databuddy.data;
+package commoble.databuddy.data;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +32,7 @@ import java.util.function.Function;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 
 import net.minecraft.client.resources.JsonReloadListener;
 import net.minecraft.profiler.IProfiler;
@@ -137,13 +137,13 @@ public class SimpleJsonDataManager<T> extends JsonReloadListener
 
 	/** Called on resource reload, the jsons have already been found for us and we just need to parse them in here **/
 	@Override
-	protected void apply(Map<ResourceLocation, JsonObject> jsons, IResourceManager manager, IProfiler profiler)
+	protected void apply(Map<ResourceLocation, JsonElement> jsons, IResourceManager manager, IProfiler profiler)
 	{
 		this.data = SimpleJsonDataManager.mapValues(jsons, (this::getJsonAsData));
 	}
 
 	/** Use a json object (presumably one from an assets/modid/mondobooks folder) to generate a data object **/
-	protected T getJsonAsData(JsonObject json)
+	protected T getJsonAsData(JsonElement json)
 	{
 		return GSON.fromJson(json, this.dataClass);
 	}

@@ -1,4 +1,4 @@
-package com.github.commoble.databuddy.nbt;
+package commoble.databuddy.nbt;
 
 import java.util.HashMap;
 import java.util.Map;

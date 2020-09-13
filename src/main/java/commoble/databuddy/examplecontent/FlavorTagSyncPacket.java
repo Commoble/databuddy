@@ -1,13 +1,12 @@
-package com.github.commoble.databuddy.examplecontent;
+package commoble.databuddy.examplecontent;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.github.commoble.databuddy.nbt.NBTListCodec;
-import com.github.commoble.databuddy.nbt.NBTMapCodec;
-
+import commoble.databuddy.nbt.NBTListCodec;
+import commoble.databuddy.nbt.NBTMapCodec;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;

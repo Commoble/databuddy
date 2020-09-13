@@ -24,7 +24,7 @@ SOFTWARE.
 
  */
 
-package com.github.commoble.databuddy.data;
+package commoble.databuddy.data;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -59,8 +59,10 @@ import net.minecraft.resources.IResource;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
@@ -115,26 +117,20 @@ public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Reso
 	}
 	
 	/**
-	 * Subscribes to additional events to handle the syncing of the data from server to client
-	 * when players join the server or the server reloads datapacks.
-	 * Call this when you instantiate the data manager (don't call more than once per data manager instance!)
-	 * Also, this will probably cause crashes if this is invoked in a data loader that loads client assets,
-	 * so don't do that either
-	 * 
-	 * @param <PACKET> A packet type. Does not need to be registered to your channel when you call withSyncingPacket,
-	 * 	but does need to be registered to your channel by the time the server starts
-	 * @param channel A channel that the given packet type is registered to
-	 * @param packetFactory A function that produces a packet instance from the data map
-	 * @return this
+	 * This should be called at most once, in a mod constructor.
+	 * Calling this method in static init may cause it to be called later than it should be.
+	 * Calling this method A) causes the data manager to send a data-syncing packet to all players when a server /reloads data,
+	 * and B) subscribes the data manager to the PlayerLoggedIn event to allow it to sync itself to players when they log in
+	 * @param forgeBus
+	 * @param channel
+	 * @param packetFactory 
+	 * @return
 	 */
-	public <PACKET> MergeableJsonDataManager<RAW, FINE> withSyncingPacket(SimpleChannel channel,
+	public <PACKET> void subscribeAsSyncable(IEventBus forgeBus, SimpleChannel channel,
 		Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
 	{
-		
-		MinecraftForge.EVENT_BUS.addListener(this.getLoginListener(channel, packetFactory));
+		forgeBus.addListener(this.getLoginListener(channel, packetFactory));
 		this.syncOnReloadCallback = Optional.of(() -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data)));
-		
-		return this;
 	}
 	
 	<PACKET> Consumer<PlayerEvent.PlayerLoggedInEvent> getLoginListener(SimpleChannel channel,
@@ -218,9 +214,24 @@ public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Reso
 	@Override
 	protected void apply(final Map<ResourceLocation, FINE> processedData, final IResourceManager resourceManager, final IProfiler profiler)
 	{
+		// now that we're on the main thread, store the data that was loaded off-thread
 		this.data = processedData;
 		
-		this.syncOnReloadCallback.ifPresent(Runnable::run);
+		// hacky server test until we can find a better way to do this
+		boolean isServer = true;
+		try
+		{
+			LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
+		}
+		catch(NullPointerException e)
+		{
+			isServer = false;
+		}
+		if (isServer == true)
+		{
+			// if we're on the server and we are configured to send syncing packets, send syncing packets
+			this.syncOnReloadCallback.ifPresent(Runnable::run);
+		}
 	}
 
 	public static boolean isStringJsonFile(final String filename)

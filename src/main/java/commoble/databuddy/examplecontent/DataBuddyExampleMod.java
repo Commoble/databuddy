@@ -1,11 +1,11 @@
-package com.github.commoble.databuddy.examplecontent;
+package commoble.databuddy.examplecontent;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
@@ -32,8 +32,9 @@ public class DataBuddyExampleMod
 		
 		this.registerPackets();
 		
-		forgeBus.addListener(this::onServerAboutToStart);
+		forgeBus.addListener(this::onAddReloadListeners);
 		forgeBus.addListener(this::testData);
+		FlavorTags.DATA_LOADER.subscribeAsSyncable(forgeBus, CHANNEL, FlavorTagSyncPacket::new);
 	}
 	
 	void registerPackets()
@@ -48,12 +49,13 @@ public class DataBuddyExampleMod
 	// register our data loader to the server
 	// for loading assets, we can add our reload listener to Minecraft in our mod constructor
 	// in 1.16, forge has a dedicated event for registering reload listeners
+	// in 1.15, this can be added to the server in FMLServerAboutToStartEvent
 	// note that for data that needs to be on the client as well (e.g. recipes)
 	// then a syncing packet containing the relevant data should be sent when a player joins or resources are reloaded
 	// (you'd need to implement your own packet at the moment)
-	void onServerAboutToStart(FMLServerAboutToStartEvent event)
+	void onAddReloadListeners(AddReloadListenerEvent event)
 	{
-		event.getServer().getResourceManager().addReloadListener(FlavorTags.DATA_LOADER);
+		event.addListener(FlavorTags.DATA_LOADER);
 	}
 	
 	void testData(PlayerInteractEvent.RightClickBlock event)

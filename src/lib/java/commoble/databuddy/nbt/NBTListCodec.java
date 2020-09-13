@@ -1,8 +1,7 @@
-package com.github.commoble.databuddy.nbt;
+package commoble.databuddy.nbt;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -117,24 +116,41 @@ public class NBTListCodec<ENTRY, RAW>
 		return compound;
 	}
 	
+	/**
+	 * Represents a function that takes a list NBT and an index and returns the object in the list at that index.
+	 * T must match the NBT type of the ListNBT's element or the type of the object they represent,
+	 * e.g. Integer, String, CompoundNBT, etc
+	 */
+	@FunctionalInterface
+	public static interface ListReader<T>
+	{
+		/**
+		 * 
+		 * @param list a list nbt
+		 * @param index an index in the list
+		 * @return an nbt element at the given index in the list
+		 */
+		public T apply(ListNBT list, int index);
+	}
+	
 	public static class ListNBTType<RAW>
 	{
-		public static final ListNBTType<Byte> BYTE = new ListNBTType<>(Constants.NBT.TAG_BYTE, (list, i) -> (byte)(list.getInt(i)), ByteNBT::valueOf);
-		public static final ListNBTType<Short> SHORT = new ListNBTType<>(Constants.NBT.TAG_SHORT, ListNBT::getShort, ShortNBT::valueOf);
-		public static final ListNBTType<Integer> INTEGER = new ListNBTType<>(Constants.NBT.TAG_INT, ListNBT::getInt, IntNBT::valueOf);
+		public static final ListNBTType<Byte> BYTE = new ListNBTType<>(Constants.NBT.TAG_BYTE, (list, i) -> (byte)(list.getInt(i)), ByteNBT::of);
+		public static final ListNBTType<Short> SHORT = new ListNBTType<>(Constants.NBT.TAG_SHORT, ListNBT::getShort, ShortNBT::of);
+		public static final ListNBTType<Integer> INTEGER = new ListNBTType<>(Constants.NBT.TAG_INT, ListNBT::getInt, IntNBT::of);
 		//public static final NBTType<Long> LONG = new NBTType<>(Constants.NBT.TAG_LONG, lists do not have long getter, LongNBT::valueOf);
-		public static final ListNBTType<Float> FLOAT = new ListNBTType<>(Constants.NBT.TAG_FLOAT, ListNBT::getFloat, FloatNBT::valueOf);
-		public static final ListNBTType<Double> DOUBLE = new ListNBTType<>(Constants.NBT.TAG_DOUBLE, ListNBT::getDouble, DoubleNBT::valueOf);
-		public static final ListNBTType<String> STRING = new ListNBTType<>(Constants.NBT.TAG_STRING, ListNBT::getString, StringNBT::valueOf);
+		public static final ListNBTType<Float> FLOAT = new ListNBTType<>(Constants.NBT.TAG_FLOAT, ListNBT::getFloat, FloatNBT::of);
+		public static final ListNBTType<Double> DOUBLE = new ListNBTType<>(Constants.NBT.TAG_DOUBLE, ListNBT::getDouble, DoubleNBT::of);
+		public static final ListNBTType<String> STRING = new ListNBTType<>(Constants.NBT.TAG_STRING, ListNBT::getString, StringNBT::of);
 		public static final ListNBTType<ListNBT> LIST = new ListNBTType<>(Constants.NBT.TAG_LIST, ListNBT::getList, x->x);
 		public static final ListNBTType<CompoundNBT> COMPOUND = new ListNBTType<>(Constants.NBT.TAG_COMPOUND, ListNBT::getCompound, x->x);
 		
 		/** see forge's Constants.NBT, needed for ListNBTs to work safely **/
 		final int tagID;
-		final BiFunction<ListNBT, Integer, RAW> listReader;
+		final ListReader<RAW> listReader;
 		final Function<RAW, INBT> serializer;
 		
-		public ListNBTType(int tagID, BiFunction<ListNBT, Integer, RAW> listReader, Function<RAW, INBT> serializer)
+		public ListNBTType(int tagID, ListReader<RAW> listReader, Function<RAW, INBT> serializer)
 		{
 			this.tagID = tagID;
 			this.listReader = listReader;

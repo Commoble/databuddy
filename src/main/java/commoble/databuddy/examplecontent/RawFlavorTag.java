@@ -1,4 +1,4 @@
-package com.github.commoble.databuddy.examplecontent;
+package commoble.databuddy.examplecontent;
 
 import java.util.List;
 
