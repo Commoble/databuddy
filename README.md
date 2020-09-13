@@ -56,3 +56,7 @@ tasks.build.dependsOn reobfShadowJar
 ```
 
 Alternatively, many of the source classes within are relatively self-contained and can be repackaged into your own sources as-needed; please be considerate and keep the license and copyright notice in any source files you copy into your own projects in this manner.
+
+###### The Example Mod
+
+The sources on github include an example forge mod that uses the library; the example mod is *not* built into or distributed with the library jars. Those who wish to run the example mod may run it by downloading or forking the sources from github and setting up a forge mod workspace with them.
