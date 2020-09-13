@@ -1,4 +1,4 @@
-package com.github.commoble.databuddy.examplecontent;
+package commoble.databuddy.examplecontent;
 
 import java.util.HashSet;
 import java.util.List;
@@ -7,11 +7,11 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 
-import com.github.commoble.databuddy.data.MergeableJsonDataManager;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import commoble.databuddy.data.MergeableJsonDataManager;
 import net.minecraft.util.ResourceLocation;
 
 public class FlavorTags
@@ -21,8 +21,7 @@ public class FlavorTags
 		TypeToken.get(RawFlavorTag.class).getType(),	// object type we deserialize jsons to
 		new Gson(),										// json deserializer
 		LogManager.getLogger(),
-		FlavorTags::processFlavorTags)					// data merger/processer
-	.withSyncingPacket(DataBuddyExampleMod.CHANNEL, FlavorTagSyncPacket::new);					
+		FlavorTags::processFlavorTags);					// data merger/processer					
 	
 
 	
