@@ -125,6 +125,7 @@ public class SimpleJsonDataManager<T> extends JsonReloadListener
 	
 	/**
 	 * @param folder This is the name of the folders that the resource loader looks in, e.g. assets/modid/FOLDER
+	 * @param dataClass the class to convert jsons into
 	 */
 	public SimpleJsonDataManager(String folder, Class<T> dataClass)
 	{
