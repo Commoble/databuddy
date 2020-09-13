@@ -10,7 +10,7 @@ A library for assisting with the handling of many kinds of data in Minecraft For
 
 You may bundle the jar into your projects in your favorite manner. One way of using this is to use the shadow gradle plugin in your buildscript, which helps avoid collisions with other mods that may be using the same library:
 
-```
+```groovy
 buildscript {
 	repositories {
 		jcenter() // buildscript repo to get shadow from
