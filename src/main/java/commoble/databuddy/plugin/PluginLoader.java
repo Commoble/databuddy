@@ -52,8 +52,9 @@ public class PluginLoader
 	 * <p>Classes that implement the given PLUGIN interface and are annotated with the given annotation must have an argless
 	 * constructor, or that plugin will fail to load. Plugins that fail to load will be caught and logged.</p>
 	 * 
-	 * @param <REGISTRATOR> Plugin registry object to register plugins to
+	 * @param <REGISTRATOR> Interface that plugins can consume
 	 * @param <PLUGIN> Plugin interface type. Must be able to consume REGISTRATORS.
+	 * @param <REGISTRY> Implementation type of REGISTRATOR to register plugins to
 	 * @param annotationClass Annotation class that the class scanner will look for
 	 * @param pluginInterface Registrator-consuming interface class
 	 * @param registrator The object to give to plugins so they can register things to it
@@ -61,10 +62,10 @@ public class PluginLoader
 	 * @param loggerName A name used by the logger, can be your modid
 	 * @return The registrator instance that was given, after 
 	 */
-	public static <REGISTRATOR, PLUGIN extends Consumer<REGISTRATOR>> REGISTRATOR loadPlugins(
+	public static <REGISTRATOR, PLUGIN extends Consumer<REGISTRATOR>, REGISTRY extends REGISTRATOR> REGISTRY loadPlugins(
 		final Class<?> annotationClass,
 		final Class<PLUGIN> pluginInterface,
-		final REGISTRATOR registrator,
+		final REGISTRY registrator,
 		final Logger logger,
 		final String loggerName)
 	{
