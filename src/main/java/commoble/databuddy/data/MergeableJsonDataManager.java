@@ -59,8 +59,8 @@ import net.minecraft.resources.IResource;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.network.PacketDistributor;
@@ -93,7 +93,7 @@ public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Reso
 	 * The type of java object we are converting jsons into;
 	 * This is for the RAW data type
 	 * use TypeToken.get(YourThing.class).getType()
-	 * or e.g. new TypeToken<Map<Thing>>(){}.getType() for collections
+	 * or e.g. new {@literal TypeToken<Map<Thing>>(){}.getType()} for collections
 	 * 
 	 * @param gson
 	 * The gson instance used to deserialize jsons to our java objects
@@ -121,19 +121,18 @@ public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Reso
 	 * Calling this method in static init may cause it to be called later than it should be.
 	 * Calling this method A) causes the data manager to send a data-syncing packet to all players when a server /reloads data,
 	 * and B) subscribes the data manager to the PlayerLoggedIn event to allow it to sync itself to players when they log in
-	 * @param forgeBus
-	 * @param channel
-	 * @param packetFactory 
-	 * @return
+	 * @param <PACKET> the packet type that will be sent on the given channel
+	 * @param channel The networking channel of your mod
+	 * @param packetFactory  A packet constructor or factory method that converts the given map to a packet object to send on the given channel
 	 */
-	public <PACKET> void subscribeAsSyncable(IEventBus forgeBus, SimpleChannel channel,
+	public <PACKET> void subscribeAsSyncable(SimpleChannel channel,
 		Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
 	{
-		forgeBus.addListener(this.getLoginListener(channel, packetFactory));
+		MinecraftForge.EVENT_BUS.addListener(this.getLoginListener(channel, packetFactory));
 		this.syncOnReloadCallback = Optional.of(() -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data)));
 	}
 	
-	<PACKET> Consumer<PlayerEvent.PlayerLoggedInEvent> getLoginListener(SimpleChannel channel,
+	private <PACKET> Consumer<PlayerEvent.PlayerLoggedInEvent> getLoginListener(SimpleChannel channel,
 		Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
 	{
 		return event -> {
@@ -204,7 +203,11 @@ public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Reso
 		return this.merger.apply(data.stream().map(this::getJsonAsData));
 	}
 
-	/** Use a json object  to generate a data object **/
+	/**
+	 * Use a json object to generate a raw data object
+	 * @param json The json object we are converting to the raw instance
+	 * @return The raw instance we converted the json object to
+	 **/
 	protected RAW getJsonAsData(final JsonObject json)
 	{
 		return this.gson.fromJson(json, this.type);

@@ -1,21 +1,3 @@
-package commoble.databuddy.nbt;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.IntStream;
-
-import net.minecraft.nbt.ByteNBT;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.DoubleNBT;
-import net.minecraft.nbt.FloatNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.IntNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.ShortNBT;
-import net.minecraft.nbt.StringNBT;
-import net.minecraftforge.common.util.Constants;
-
 /**
  * 
 The MIT License (MIT)
@@ -41,10 +23,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+
+package commoble.databuddy.nbt;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.IntStream;
+
+import net.minecraft.nbt.ByteNBT;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.DoubleNBT;
+import net.minecraft.nbt.FloatNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.IntNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.ShortNBT;
+import net.minecraft.nbt.StringNBT;
+import net.minecraftforge.common.util.Constants;
+
 /**
  * Helper class for converting lists or list-like collections of arbitrary data to NBT and back.
  * 
- * @param ENTRY the data type in the actual java list, i.e. List<ENTRY>
+ * @param ENTRY the data type in the actual java list, i.e. {@literal List<ENTRY>}
  * @param RAW either a primitive or an NBT collection type, see ListNBTType instances
  */
 public class NBTListCodec<ENTRY, RAW>
@@ -74,7 +75,7 @@ public class NBTListCodec<ENTRY, RAW>
 	}
 	
 	/**
-	 * Reconstructs and returns a List<T> from a CompoundNBT
+	 * Reconstructs and returns a {@literal List<ENTRY>} from a CompoundNBT
 	 * If the nbt used was given by this.write(list), the list returned will be a reconstruction of the original List
 	 * @param compound The CompoundNBT to read and construct the List from
 	 * @return A List that the data contained in the CompoundNBT represents
@@ -101,7 +102,7 @@ public class NBTListCodec<ENTRY, RAW>
 	/**
 	 * Given a list and a CompoundNBT,writes the contents of that list into the NBT
 	 * The same CompoundNBT can be given to this.read to retrieve that map 
-	 * @param list A List<T> to write into the nbt
+	 * @param list A {@literal List<ENTRY>} to write into the nbt
 	 * @param compound A CompoundNBT to write the list into
 	 * @return A CompoundNBT that, when used as the argument to this.read(nbt), will cause that function to reconstruct and return a copy of the original list
 	 */

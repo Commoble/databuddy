@@ -22,18 +22,17 @@ sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = co
 
 sourceSets {
 	main
+	examplemod
 	test
-	lib
-}
-
-configurations {
-	libCompile.extendsFrom(compile)
 }
 
 minecraft {
     mappings channel: 'snapshot', version: "${mappings_version}"    
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     
+	// these run configs allow the examplemod to be run in a forge-ready workspace
+	// the examplemod sourceset must be first for these to work
+	// the examplemod does not become built into the final jar
     runs {
         client {
             workingDirectory project.file('run')
@@ -41,8 +40,8 @@ minecraft {
 
             mods {
                 databuddy {
-                    source sourceSets.main
-					source sourceSets.lib
+                    source sourceSets.examplemod
+					source sourceSets.main
                 }
             }
         }
@@ -53,8 +52,8 @@ minecraft {
 
             mods {
                 databuddy {
-                    source sourceSets.main
-					source sourceSets.lib
+                    source sourceSets.examplemod
+					source sourceSets.main
                 }
             }
         }
@@ -67,8 +66,8 @@ minecraft {
 
             mods {
                 databuddy {
-                    source sourceSets.main
-                    source sourceSets.lib
+                    source sourceSets.examplemod
+					source sourceSets.main
                 }
             }
         }
@@ -82,7 +81,7 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
-    implementation sourceSets.lib.output
+    //implementation sourceSets.lib.output
 
 }
 
@@ -90,8 +89,6 @@ dependencies {
 jar {
 	from sourceSets.main.output.classesDirs
 	from sourceSets.main.output.resourcesDir
-	from sourceSets.lib.output.classesDirs
-	from sourceSets.lib.output.resourcesDir
     manifest {
         attributes([
             "Specification-Title": "${modid}",
@@ -114,19 +111,18 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 task sourcesJar(type: Jar) {
 	classifier = "sources"
 	from sourceSets.main.allJava
-	from sourceSets.lib.allJava
 }
 
-task libJar(type: Jar) {
-	classifier = "lib"
-	from sourceSets.lib.output
-	from sourceSets.lib.allJava
-}
+//task examplemodJar(type: Jar) {
+//	classifier = "examplemod"
+//	from sourceSets.main.output
+//	from sourceSets.main.allJava
+//}
 
 artifacts {
 	archives javadocJar
 	archives sourcesJar
-	archives libJar
+	// archives examplemodJar
 }
 
 jar.finalizedBy('reobfJar') 
@@ -138,7 +134,6 @@ publishing {
         mavenJava(MavenPublication) {
 			artifactId project.archivesBaseName
             artifact jar
-			artifact libJar
 			artifact sourcesJar
 			artifact javadocJar
         }

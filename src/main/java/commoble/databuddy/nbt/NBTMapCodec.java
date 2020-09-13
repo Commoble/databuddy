@@ -1,15 +1,3 @@
-package commoble.databuddy.nbt;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.IntStream;
-
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraftforge.common.util.Constants;
-
 /**
  * 
 The MIT License (MIT)
@@ -35,49 +23,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
  */
+package commoble.databuddy.nbt;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.IntStream;
+
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraftforge.common.util.Constants;
 
 /**
  * Helper class for writing a Map into a CompoundNBT
- * example usage for use in e.g. a WorldSavedData, a TileEntity, etc:
  * 
- * 	private static final String BLOCKS = "blocks";
-	private static final String BLOCKPOS = "blockpos";
-	private static final String BLOCKSTATE = "blockstate";
-	
-	private Map<BlockPos, BlockState> map = new HashMap<>();
-	
-	private static final NBTMapHelper<BlockPos, BlockState> BLOCKS_MAPPER = new NBTMapHelper<>(
-			BLOCKS,
-			(nbt, blockPos) -> nbt.put(BLOCKPOS, NBTUtil.writeBlockPos(blockPos)),
-			nbt -> NBTUtil.readBlockPos(nbt.getCompound(BLOCKPOS)),
-			(nbt, blockState) -> nbt.put(BLOCKSTATE, NBTUtil.writeBlockState(blockState)),
-			nbt -> NBTUtil.readBlockState(nbt.getCompound(BLOCKSTATE))
-			);
-			
-	@Override
-	public void read(CompoundNBT nbt)
-	{
-		this.map = BLOCKS_MAPPER.read(nbt);
-	}
-
-	@Override
-	public CompoundNBT write(CompoundNBT compound)
-	{
-		BLOCKS_MAPPER.write(this.map, compound);
-		return compound;
-	}
-			
-			
- * 
+ * @param KEY the type of the Map's keys
+ * @param VALUE the type of the Map's values
  * @author Joseph aka Commoble
  */
-public class NBTMapCodec<K, V>
+public class NBTMapCodec<KEY, VALUE>
 {
 	private final String name;
-	private final BiConsumer<CompoundNBT, K> keyWriter;
-	private final Function<CompoundNBT, K> keyReader;
-	private final BiConsumer<CompoundNBT, V> valueWriter;
-	private final Function<CompoundNBT, V> valueReader;
+	private final BiConsumer<CompoundNBT, KEY> keyWriter;
+	private final Function<CompoundNBT, KEY> keyReader;
+	private final BiConsumer<CompoundNBT, VALUE> valueWriter;
+	private final Function<CompoundNBT, VALUE> valueReader;
 	
 	/**
 	 * @param name A unique identifier for the hashmap, allowing the map to be written into a CompoundNBT alongside other data
@@ -88,10 +59,10 @@ public class NBTMapCodec<K, V>
 	 */
 	public NBTMapCodec(
 			String name,
-			BiConsumer<CompoundNBT, K> keyWriter,
-			Function<CompoundNBT, K> keyReader,
-			BiConsumer<CompoundNBT, V> valueWriter,
-			Function<CompoundNBT, V> valueReader)
+			BiConsumer<CompoundNBT, KEY> keyWriter,
+			Function<CompoundNBT, KEY> keyReader,
+			BiConsumer<CompoundNBT, VALUE> valueWriter,
+			Function<CompoundNBT, VALUE> valueReader)
 	{
 		this.name = name;
 		this.keyReader = keyReader;
@@ -101,14 +72,14 @@ public class NBTMapCodec<K, V>
 	}
 	
 	/**
-	 * Reconstructs and returns a Map<K,V> from a CompoundNBT
+	 * Reconstructs and returns a {@literal Map<KEY,VALUE>} from a CompoundNBT
 	 * If the nbt used was given by this.write(map), the map returned will be a reconstruction of the original Map
 	 * @param nbt The CompoundNBT to read and construct the Map from
 	 * @return A Map that the data contained in the CompoundNBT represents
 	 */
-	public Map<K, V> read(final CompoundNBT nbt)
+	public Map<KEY, VALUE> read(final CompoundNBT nbt)
 	{
-		final Map<K, V> newMap = new HashMap<>();
+		final Map<KEY, VALUE> newMap = new HashMap<>();
 
 		final ListNBT keyList = nbt.getList(this.name, Constants.NBT.TAG_COMPOUND);
 		if (keyList == null)
@@ -121,8 +92,8 @@ public class NBTMapCodec<K, V>
 
 		IntStream.range(0, keyListSize).mapToObj(keyIterator -> keyList.getCompound(keyIterator))
 				.forEach(keyNBT -> {
-					final K key = this.keyReader.apply(keyNBT);
-					final V value = this.valueReader.apply(keyNBT);
+					final KEY key = this.keyReader.apply(keyNBT);
+					final VALUE value = this.valueReader.apply(keyNBT);
 					
 					newMap.put(key, value);
 				});
@@ -133,17 +104,17 @@ public class NBTMapCodec<K, V>
 	/**
 	 * Given a map and a CompoundNBT, writes the map into the NBT
 	 * The same compoundNBT can be given to this.read to retrieve that map
-	 * @param map A Map<K,V>
+	 * @param map A {@literal Map<KEY,VALUE>}
 	 * @param compound A CompoundNBT to write the map into
 	 * @return a CompoundNBT that, when used as the argument to this.read(nbt), will cause that function to reconstruct and return a copy of the original map
 	 */
-	public CompoundNBT write(final Map<K,V> map, final CompoundNBT compound)
+	public CompoundNBT write(final Map<KEY,VALUE> map, final CompoundNBT compound)
 	{
 		final ListNBT listOfKeys = new ListNBT();
 		map.entrySet().forEach(entry ->
 		{
-			final K key = entry.getKey();
-			final V value = entry.getValue();
+			final KEY key = entry.getKey();
+			final VALUE value = entry.getValue();
 			
 			final CompoundNBT entryNBT = new CompoundNBT();
 			this.keyWriter.accept(entryNBT, key);

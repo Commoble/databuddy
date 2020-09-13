@@ -34,7 +34,7 @@ public class DataBuddyExampleMod
 		
 		forgeBus.addListener(this::onAddReloadListeners);
 		forgeBus.addListener(this::testData);
-		FlavorTags.DATA_LOADER.subscribeAsSyncable(forgeBus, CHANNEL, FlavorTagSyncPacket::new);
+		FlavorTags.DATA_LOADER.subscribeAsSyncable(CHANNEL, FlavorTagSyncPacket::new);
 	}
 	
 	void registerPackets()
