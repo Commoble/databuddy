@@ -59,4 +59,4 @@ Alternatively, many of the source classes within are relatively self-contained a
 
 ###### The Example Mod
 
-The sources on github include an example forge mod that uses the library; the example mod is *not* built into or distributed with the library jars. Those who wish to run the example mod may run it by downloading or forking the sources from github and setting up a forge mod workspace with them.
+The sources on github include an example forge mod that uses several features in the library; the example mod is *not* built into or distributed with the library jars. Those who wish to run the example mod may run it by downloading or forking the sources from github and setting up a forge mod workspace with them.
