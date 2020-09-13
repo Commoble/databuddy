@@ -15,7 +15,7 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 version = "${mod_version}"
-group = "com.github.commoble.${modid}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "commoble.${modid}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "${modid}-${mc_version}"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
@@ -24,6 +24,10 @@ sourceSets {
 	main
 	test
 	lib
+}
+
+configurations {
+	libCompile.extendsFrom(compile)
 }
 
 minecraft {
@@ -36,7 +40,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                modid {
+                databuddy {
                     source sourceSets.main
 					source sourceSets.lib
                 }
@@ -48,7 +52,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                modid {
+                databuddy {
                     source sourceSets.main
 					source sourceSets.lib
                 }
@@ -62,8 +66,9 @@ minecraft {
             args '--mod', 'modid', '--all', '--output', file('src/generated/resources/')
 
             mods {
-                modid {
+                databuddy {
                     source sourceSets.main
+                    source sourceSets.lib
                 }
             }
         }
