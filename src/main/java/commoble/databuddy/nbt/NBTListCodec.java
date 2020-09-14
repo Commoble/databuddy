@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
+import commoble.databuddy.codec.MapCodecHelper;
 import net.minecraft.nbt.ByteNBT;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.DoubleNBT;
@@ -47,7 +48,9 @@ import net.minecraftforge.common.util.Constants;
  * 
  * @param ENTRY the data type in the actual java list, i.e. {@literal List<ENTRY>}
  * @param RAW either a primitive or an NBT collection type, see ListNBTType instances
+ * @deprecated Consider using mojang codecs and Codec::listOf, see {@link MapCodecHelper} and <a href=https://gist.github.com/Drullkus/1bca3f2d7f048b1fe03be97c28f87910> Drullkus's codec primer</a>
  */
+@Deprecated
 public class NBTListCodec<ENTRY, RAW>
 {
 	private final String name;
