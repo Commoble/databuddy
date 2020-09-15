@@ -4,7 +4,7 @@ A library for assisting with the handling of many kinds of data in Minecraft For
 
 ## What's in the library?
 - Helpers for defining new types of datapack data and setting up data loaders for them
-- Helpers for converting lists and maps to NBT and back
+- Helpers for defining Codecs for converting maps to NBT and back (with explanations on how to use Codecs)
 
 ## What can I do to use this library in my own projects?
 
