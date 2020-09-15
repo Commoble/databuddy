@@ -56,10 +56,14 @@ public class MapCodecHelper
 	}
 	
 	/**
-	 * Returns a codec for a map with string-representable keys.
+	 * <p>Returns a codec for a map with string-representable keys.
 	 * The default map codec seems to require that keys be serialized to strings and back.
 	 * String-keyed maps have nicer representation in NBT and json, but aren't always viable.
-	 * For keys that aren't strings and can't nicely be converted to strings, see makeEntryListCodec
+	 * For keys that aren't strings and can't nicely be converted to strings, see makeEntryListCodec.</p>
+	 * 
+	 * <p>If you already have a key codec that serializes an object to strings, use Codec.unboundedMap(keyCodec, valueCodec).
+	 * Keep in mind that this will fail to serialize your map if your key codec does not serialize your keys to strings.
+	 * ResourceLocation.CODEC is a good example of something that unboundedMap is safe to use for.
 	 * @param <KEY> type of the map's keys
 	 * @param <VALUE> type of the map's values
 	 * @param toString Function to convert keys to strings
