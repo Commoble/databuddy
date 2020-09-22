@@ -1,4 +1,4 @@
-package commoble.databuddy.nbt;
+package commoble.databuddy.codec;
 
 import java.util.HashMap;
 import java.util.Map;

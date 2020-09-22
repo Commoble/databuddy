@@ -53,6 +53,7 @@ reobf {
 
 // this replaces jar.finalizedBy('reobfJar') in the standard forge mod buildscript
 tasks.build.dependsOn reobfShadowJar
+jar.finalizedBy('reobfShadowJar')
 ```
 
 Alternatively, many of the source classes within are relatively self-contained and can be repackaged into your own sources as-needed; please be considerate and keep the license and copyright notice in any source files you copy into your own projects in this manner.
