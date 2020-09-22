@@ -71,7 +71,7 @@ import com.mojang.serialization.RecordBuilder;
  * 	"value": 24
  * }</pre>
  * A singleton-like or fieldless codec can be represented with e.g.
- * <pre>Codec<Integer> THOUSAND_CODEC = Codec.unit(1000);</pre>
+ * <pre>{@code Codec<Integer> THOUSAND_CODEC = Codec.unit(1000);}</pre>
  * A json using this codec could look like
  * <pre>
  * "some_variant_type_field":

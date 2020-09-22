@@ -64,11 +64,11 @@ public class NullableFieldCodec<VALUE> extends OptionalFieldCodec<VALUE>
 	 * As with makeOptional field, but decodes values directly to the given type instead of wrapping in an optional.
 	 * Absent or null values are decoded as the given default value.
 	 * 
-	 * @param <VALUE>
-	 * @param name
-	 * @param elementCodec
-	 * @param defaultValue
-	 * @return
+	 * @param <VALUE> The type of the field's value
+	 * @param name The name of the field
+	 * @param elementCodec The codec to delegate to for encoding/decoding the field's values
+	 * @param defaultValue The value that will be decoded if the field is null or absent
+	 * @return A codec for a field that permits absent or null values
 	 */
 	public static <VALUE> MapCodec<VALUE> makeDefaultableField(String name, Codec<VALUE> elementCodec, VALUE defaultValue)
 	{
