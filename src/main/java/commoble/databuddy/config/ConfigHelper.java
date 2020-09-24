@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.Builder;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -57,7 +58,7 @@ public class ConfigHelper
 	 */
 	public static <T> T register(
 		final ModConfig.Type configType,
-		final BiFunction<ForgeConfigSpec.Builder, Subscriber, T> configBuilder)
+		final BiFunction<Builder, Subscriber, T> configBuilder)
 	{
 		return register(ModLoadingContext.get(), FMLJavaModLoadingContext.get(), configType, configBuilder);
 	}
@@ -80,10 +81,10 @@ public class ConfigHelper
 		final ModLoadingContext modContext,
 		final FMLJavaModLoadingContext fmlContext,
 		final ModConfig.Type configType,
-		final BiFunction<ForgeConfigSpec.Builder, Subscriber, T> configBuilder)
+		final BiFunction<Builder, Subscriber, T> configBuilder)
 	{
 		final List<ConfigValueListener<?>> subscriptionList = new ArrayList<>();
-		final Pair<T, ForgeConfigSpec> entry = new ForgeConfigSpec.Builder().configure(builder -> configBuilder.apply(builder, getSubscriber(subscriptionList)));
+		final Pair<T, ForgeConfigSpec> entry = new Builder().configure(builder -> configBuilder.apply(builder, getSubscriber(subscriptionList)));
 		final T config = entry.getLeft();
 		final ForgeConfigSpec spec = entry.getRight();
 		
