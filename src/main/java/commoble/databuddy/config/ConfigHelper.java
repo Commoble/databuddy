@@ -38,12 +38,15 @@ import net.minecraftforge.fml.config.ModConfig.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 
-
+/**
+ * Config helper for automatically subscribing forge configs to config reload events as you build them. See {@link DataBuddyExampleMod} and {@link ExampleServerConfig} for usage examples.
+ * <p><a href=https://github.com/Commoble/databuddy/blob/1.16.3/src/examplemod/java/commoble/databuddy/examplecontent/DataBuddyExampleMod.java> Example mod on github </a></p>
+ * <p><a href=https://github.com/Commoble/databuddy/blob/1.16.3/src/examplemod/java/commoble/databuddy/examplecontent/ExampleServerConfig.java> Example config class on github </a></p>
+ */
 public class ConfigHelper
 {
 	/**
-	 * Call this in your @Mod class constructor. See {@link DataBuddyExampleMod} and {@link ExampleServerConfig} for usage examples.
-	 * This is the same as the other register method, but the contexts are assumed.
+	 * Call this in your @Mod class constructor. This is the same as the other register method, but the contexts are assumed.
 	 * @param <T> Your config class
 	 * @param configType Forge config type:
 	 * <ul>
@@ -62,7 +65,7 @@ public class ConfigHelper
 	}
 	
 	/**
-	 * Call this in your @Mod class constructor. See {@link DataBuddyExampleMod} and {@link ExampleServerConfig} for usage examples.
+	 * Call this in your @Mod class constructor.
 	 * @param <T> Your config class
 	 * @param modContext mod context from ModLoadingContext.get()
 	 * @param fmlContext mod context from FMLJavaModLoadingContext.get()
