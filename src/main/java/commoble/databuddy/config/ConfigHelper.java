@@ -43,31 +43,13 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
  * <p><a href=https://github.com/Commoble/databuddy/blob/1.16.3/src/examplemod/java/commoble/databuddy/examplecontent/ExampleServerConfig.java> Example config class on github </a></p>
  */
 public class ConfigHelper
-{
-	/**
-	 * Call this in your @Mod class constructor. This is the same as the other register method, but the contexts are assumed.
-	 * @param <T> Your config class
-	 * @param configType Forge config type:
-	 * <ul>
-	 * <li>SERVER configs are defined by the server and synced to clients
-	 * <li>COMMON configs are definable by both server and clients and not synced (they may have different values)
-	 * <li>CLIENT configs are defined by clients and not used on the server
-	 * </ul>
-	 * @param configBuilder Typically the constructor for your config class
-	 * @return An instance of your config class
-	 */
-	public static <T> T register(
-		final ModConfig.Type configType,
-		final BiFunction<Builder, Subscriber, T> configBuilder)
-	{
-		return register(ModLoadingContext.get(), FMLJavaModLoadingContext.get(), configType, configBuilder);
-	}
-	
+{	
 	/**
 	 * Call this in your @Mod class constructor.
 	 * @param <T> Your config class
 	 * @param modContext mod context from ModLoadingContext.get()
 	 * @param fmlContext mod context from FMLJavaModLoadingContext.get()
+	 * @param builder config builder from "new ForgeConfigSpec.Builder()" -- needed to be invoked outside of ConfigHelper due to classloading weirdness
 	 * @param configType Forge config type:
 	 * <ul>
 	 * <li>SERVER configs are defined by the server and synced to clients
@@ -80,11 +62,12 @@ public class ConfigHelper
 	public static <T> T register(
 		final ModLoadingContext modContext,
 		final FMLJavaModLoadingContext fmlContext,
+		final Builder builder,
 		final ModConfig.Type configType,
 		final BiFunction<Builder, Subscriber, T> configBuilder)
 	{
 		final List<ConfigValueListener<?>> subscriptionList = new ArrayList<>();
-		final Pair<T, ForgeConfigSpec> entry = new Builder().configure(builder -> configBuilder.apply(builder, getSubscriber(subscriptionList)));
+		final Pair<T, ForgeConfigSpec> entry = builder.configure(thisBuilder -> configBuilder.apply(thisBuilder, getSubscriber(subscriptionList)));
 		final T config = entry.getLeft();
 		final ForgeConfigSpec spec = entry.getRight();
 		

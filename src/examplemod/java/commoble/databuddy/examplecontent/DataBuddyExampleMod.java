@@ -2,11 +2,13 @@ package commoble.databuddy.examplecontent;
 
 import commoble.databuddy.config.ConfigHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -37,7 +39,9 @@ public class DataBuddyExampleMod
 		IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 		
 		// create and subscribe our config instance
-		DataBuddyExampleMod.config = ConfigHelper.register(ModConfig.Type.SERVER, ExampleServerConfig::new);
+		DataBuddyExampleMod.config = ConfigHelper.register(
+			ModLoadingContext.get(), FMLJavaModLoadingContext.get(), new ForgeConfigSpec.Builder(),
+			ModConfig.Type.SERVER, ExampleServerConfig::new);
 		
 		this.registerPackets();
 		
