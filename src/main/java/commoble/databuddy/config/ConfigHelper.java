@@ -28,8 +28,6 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import commoble.databuddy.examplecontent.DataBuddyExampleMod;
-import commoble.databuddy.examplecontent.ExampleServerConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -39,7 +37,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 
 /**
- * Config helper for automatically subscribing forge configs to config reload events as you build them. See {@link DataBuddyExampleMod} and {@link ExampleServerConfig} for usage examples.
+ * Config helper for automatically subscribing forge configs to config reload events as you build them. See DataBuddyExampleMod and ExampleServerConfig in the examplemod for usage examples.
  * <p><a href=https://github.com/Commoble/databuddy/blob/1.16.3/src/examplemod/java/commoble/databuddy/examplecontent/DataBuddyExampleMod.java> Example mod on github </a></p>
  * <p><a href=https://github.com/Commoble/databuddy/blob/1.16.3/src/examplemod/java/commoble/databuddy/examplecontent/ExampleServerConfig.java> Example config class on github </a></p>
  */
