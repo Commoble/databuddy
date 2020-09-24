@@ -102,7 +102,7 @@ jar {
             "Implementation-Vendor" :"Commoble",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
 			"Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}",
-			"FMLModType": "Library"
+			"FMLModType": "LIBRARY"
         ])
     }
 }

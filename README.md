@@ -38,7 +38,7 @@ dependencies {
 	compile "commoble.databuddy:${databuddy_branch}:${databuddy_version}"
 	shade "commoble.databuddy:${databuddy_branch}:${databuddy_version}"
 	// where ${databuddy_branch} is e.g. databuddy-1.16.3
-	// where ${databuddy_version} is e.g. 1.5.0.0
+	// where ${databuddy_version} is e.g. 1.5.0.1
 }
 
 shadowJar {
