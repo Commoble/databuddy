@@ -2,7 +2,6 @@ package commoble.databuddy.examplecontent;
 
 import commoble.databuddy.config.ConfigHelper;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -40,7 +39,7 @@ public class DataBuddyExampleMod
 		
 		// create and subscribe our config instance
 		DataBuddyExampleMod.config = ConfigHelper.register(
-			ModLoadingContext.get(), FMLJavaModLoadingContext.get(), new ForgeConfigSpec.Builder(),
+			ModLoadingContext.get(), FMLJavaModLoadingContext.get(),
 			ModConfig.Type.SERVER, ExampleServerConfig::new);
 		
 		this.registerPackets();

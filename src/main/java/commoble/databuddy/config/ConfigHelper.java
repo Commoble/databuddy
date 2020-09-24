@@ -49,7 +49,6 @@ public class ConfigHelper
 	 * @param <T> Your config class
 	 * @param modContext mod context from ModLoadingContext.get()
 	 * @param fmlContext mod context from FMLJavaModLoadingContext.get()
-	 * @param builder config builder from "new ForgeConfigSpec.Builder()" -- needed to be invoked outside of ConfigHelper due to classloading weirdness
 	 * @param configType Forge config type:
 	 * <ul>
 	 * <li>SERVER configs are defined by the server and synced to clients
@@ -62,12 +61,11 @@ public class ConfigHelper
 	public static <T> T register(
 		final ModLoadingContext modContext,
 		final FMLJavaModLoadingContext fmlContext,
-		final Builder builder,
 		final ModConfig.Type configType,
 		final BiFunction<Builder, Subscriber, T> configBuilder)
 	{
 		final List<ConfigValueListener<?>> subscriptionList = new ArrayList<>();
-		final Pair<T, ForgeConfigSpec> entry = builder.configure(thisBuilder -> configBuilder.apply(thisBuilder, getSubscriber(subscriptionList)));
+		final Pair<T, ForgeConfigSpec> entry = new ForgeConfigSpec.Builder().configure(thisBuilder -> configBuilder.apply(thisBuilder, getSubscriber(subscriptionList)));
 		final T config = entry.getLeft();
 		final ForgeConfigSpec spec = entry.getRight();
 		
