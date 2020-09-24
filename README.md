@@ -5,6 +5,8 @@ A library for assisting with the handling of many kinds of data in Minecraft For
 ## What's in the library?
 - Helpers for defining new types of datapack data and setting up data loaders for them
 - Helpers for defining Codecs for converting maps to NBT and back (with explanations on how to use Codecs)
+- Helpers for defining Codecs that delegate to a registry of sub-codecs
+- Helpers for setting up forge configs and subscribing them to config reload events
 
 ## What can I do to use this library in my own projects?
 
