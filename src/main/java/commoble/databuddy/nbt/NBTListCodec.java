@@ -139,13 +139,13 @@ public class NBTListCodec<ENTRY, RAW>
 	
 	public static class ListNBTType<RAW>
 	{
-		public static final ListNBTType<Byte> BYTE = new ListNBTType<>(Constants.NBT.TAG_BYTE, (list, i) -> (byte)(list.getInt(i)), ByteNBT::of);
-		public static final ListNBTType<Short> SHORT = new ListNBTType<>(Constants.NBT.TAG_SHORT, ListNBT::getShort, ShortNBT::of);
-		public static final ListNBTType<Integer> INTEGER = new ListNBTType<>(Constants.NBT.TAG_INT, ListNBT::getInt, IntNBT::of);
+		public static final ListNBTType<Byte> BYTE = new ListNBTType<>(Constants.NBT.TAG_BYTE, (list, i) -> (byte)(list.getInt(i)), ByteNBT::valueOf);
+		public static final ListNBTType<Short> SHORT = new ListNBTType<>(Constants.NBT.TAG_SHORT, ListNBT::getShort, ShortNBT::valueOf);
+		public static final ListNBTType<Integer> INTEGER = new ListNBTType<>(Constants.NBT.TAG_INT, ListNBT::getInt, IntNBT::valueOf);
 		//public static final NBTType<Long> LONG = new NBTType<>(Constants.NBT.TAG_LONG, lists do not have long getter, LongNBT::valueOf);
-		public static final ListNBTType<Float> FLOAT = new ListNBTType<>(Constants.NBT.TAG_FLOAT, ListNBT::getFloat, FloatNBT::of);
-		public static final ListNBTType<Double> DOUBLE = new ListNBTType<>(Constants.NBT.TAG_DOUBLE, ListNBT::getDouble, DoubleNBT::of);
-		public static final ListNBTType<String> STRING = new ListNBTType<>(Constants.NBT.TAG_STRING, ListNBT::getString, StringNBT::of);
+		public static final ListNBTType<Float> FLOAT = new ListNBTType<>(Constants.NBT.TAG_FLOAT, ListNBT::getFloat, FloatNBT::valueOf);
+		public static final ListNBTType<Double> DOUBLE = new ListNBTType<>(Constants.NBT.TAG_DOUBLE, ListNBT::getDouble, DoubleNBT::valueOf);
+		public static final ListNBTType<String> STRING = new ListNBTType<>(Constants.NBT.TAG_STRING, ListNBT::getString, StringNBT::valueOf);
 		public static final ListNBTType<ListNBT> LIST = new ListNBTType<>(Constants.NBT.TAG_LIST, ListNBT::getList, x->x);
 		public static final ListNBTType<CompoundNBT> COMPOUND = new ListNBTType<>(Constants.NBT.TAG_COMPOUND, ListNBT::getCompound, x->x);
 		

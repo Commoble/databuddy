@@ -22,5 +22,5 @@ public class ExtraCodecs
 	public static final Codec<ChunkPos> COMPRESSED_CHUNK_POS = Codec.LONG.xmap(ChunkPos::new, ChunkPos::asLong);
 	
 	/** Serializes a Direction, should serialize as a string when serialized to NBT or uncompressed json**/
-	public static final Codec<Direction> DIRECTION = IStringSerializable.createCodec(() -> Direction.values(), Direction::byName);
+	public static final Codec<Direction> DIRECTION = IStringSerializable.createEnumCodec(() -> Direction.values(), Direction::byName);
 }

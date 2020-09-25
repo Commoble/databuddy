@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 
-import commoble.databuddy.codec.MapCodecHelper;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.nbt.StringNBT;
@@ -110,7 +109,7 @@ public class MapCodecHelperTest
 	void testReadingIncorrectNBTAsMap()
 	{
 		// given a non-compound NBT
-		StringNBT input = StringNBT.of("test");
+		StringNBT input = StringNBT.valueOf("test");
 		
 		// when we read it as a map
 		Codec<Map<String, String>> codec = MapCodecHelper.makeStringKeyedCodec(Codec.STRING);
