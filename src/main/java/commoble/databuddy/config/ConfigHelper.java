@@ -163,7 +163,7 @@ public class ConfigHelper
 		 * @param defaultObject The default instance of your config field. The given codec must be able to serialize this;
 		 * if it cannot, a RunTimeException will be intentionally thrown the first time the config attempts to load.
 		 * If the codec fails to deserialize the config field at a later time, an error message will be logged and this default instance will be used instead.  
-		 * @return
+		 * @return A reload-sensitive wrapper around your config object value. Use listener.get() to get the most up-to-date object.
 		 */
 		public <T> ConfigObjectListener<T> subscribeObject(ForgeConfigSpec.Builder builder,
 			String name,
