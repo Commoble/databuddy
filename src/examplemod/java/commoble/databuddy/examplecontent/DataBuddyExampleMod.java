@@ -82,5 +82,6 @@ public class DataBuddyExampleMod
 	{
 		System.out.println(config.bones.get());
 		System.out.println(config.bananas.get());
+		System.out.println(config.testObject.get());
 	}
 }
