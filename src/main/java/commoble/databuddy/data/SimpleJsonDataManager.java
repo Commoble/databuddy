@@ -39,7 +39,10 @@ import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 
+@Deprecated
 /**
+ * Deprecated in favor of the CodecJsonDataManager or the MergeableCodecDataManager.
+ * 
  * <p>Class for loading JSON resources that don't require anything more complicated than a basic GSON parser
  * 
  * <p>This will NOT merge jsons from mods or datapacks that define jsons with the same ID

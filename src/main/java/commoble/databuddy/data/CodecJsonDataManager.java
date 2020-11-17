@@ -29,6 +29,9 @@ package commoble.databuddy.data;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -40,9 +43,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 
 import net.minecraft.client.resources.JsonReloadListener;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.LogicalSidedProvider;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 /**
  * <p>See drullkus's primer on what codecs are and how to assemble them:<br>
@@ -113,6 +124,7 @@ public class CodecJsonDataManager<T> extends JsonReloadListener
 	
 	/** The raw data that we parsed from json last time resources were reloaded **/
 	protected Map<ResourceLocation, T> data = new HashMap<>();
+	private Optional<Runnable> syncOnReloadCallback = Optional.empty();
 	
 	/**
 	 * Creates a data manager with a standard gson parser
@@ -162,6 +174,22 @@ public class CodecJsonDataManager<T> extends JsonReloadListener
 		this.logger.info("Beginning loading of data for data loader: {}", this.folderName);
 		this.data = this.mapValues(jsons);
 		this.logger.info("Data loader for {} loaded {} jsons", this.folderName, this.data.size());
+		
+		// hacky server test until we can find a better way to do this
+		boolean isServer = true;
+		try
+		{
+			LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
+		}
+		catch(NullPointerException e)
+		{
+			isServer = false;
+		}
+		if (isServer)
+		{
+			// if we're on the server and we are configured to send syncing packets, send syncing packets
+			this.syncOnReloadCallback.ifPresent(Runnable::run);
+		}
 	}
 
 	private Map<ResourceLocation, T> mapValues(Map<ResourceLocation, JsonElement> inputs)
@@ -181,5 +209,37 @@ public class CodecJsonDataManager<T> extends JsonReloadListener
 		}
 
 		return newMap;
+	}
+
+	/**
+	 * This should be called at most once, in a mod constructor (FMLCommonSetupEvent *may* work as well)
+	 * Calling this method in static init may cause it to be called later than it should be.
+	 * Calling this method A) causes the data manager to send a data-syncing packet to all players when a server /reloads data,
+	 * and B) subscribes the data manager to the PlayerLoggedIn event to allow it to sync itself to players when they log in.
+	 * Be aware that the invoker must still manually subscribe the relevant packet type to the channel themselves.
+	 * @param <PACKET> the packet type that will be sent on the given channel
+	 * @param channel The networking channel of your mod
+	 * @param packetFactory  A packet constructor or factory method that converts the given map to a packet object to send on the given channel
+	 * @return this manager object
+	 */
+	public <PACKET> CodecJsonDataManager<T> subscribeAsSyncable(final SimpleChannel channel,
+		final Function<Map<ResourceLocation, T>, PACKET> packetFactory)
+	{
+		MinecraftForge.EVENT_BUS.addListener(this.getLoginListener(channel, packetFactory));
+		this.syncOnReloadCallback = Optional.of(() -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data)));
+		return this;
+	}
+	
+	/** Generate an event listener function for the player-login-event **/
+	private <PACKET> Consumer<PlayerEvent.PlayerLoggedInEvent> getLoginListener(final SimpleChannel channel,
+		final Function<Map<ResourceLocation, T>, PACKET> packetFactory)
+	{
+		return event -> {
+			PlayerEntity player = event.getPlayer();
+			if (player instanceof ServerPlayerEntity)
+			{
+				channel.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity)player), packetFactory.apply(this.data));
+			}
+		};
 	}
 }

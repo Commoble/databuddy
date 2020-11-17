@@ -66,6 +66,10 @@ import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
+@Deprecated
+/**
+ * Deprecated in favor of the MergeableCodecDataManager, which supports mojang codecs
+ */
 public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<ResourceLocation, FINE>>
 {
 	protected static final String JSON_EXTENSION = ".json";
