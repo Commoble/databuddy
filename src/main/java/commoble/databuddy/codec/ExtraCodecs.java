@@ -1,5 +1,9 @@
 package commoble.databuddy.codec;
 
+import java.util.Set;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -8,7 +12,7 @@ import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.ChunkPos;
 
 /**
- * Some helpful codecs for vanilla minecraft classes that may often be serialized but have no builtin codecs
+ * Some helpful codecs for common classes in java and in vanilla minecraft that may often be serialized but have no builtin codecs
  */
 public class ExtraCodecs
 {
@@ -23,4 +27,15 @@ public class ExtraCodecs
 	
 	/** Serializes a Direction, should serialize as a string when serialized to NBT or uncompressed json**/
 	public static final Codec<Direction> DIRECTION = IStringSerializable.createEnumCodec(() -> Direction.values(), Direction::byName);
+	
+	/**
+	 * Creates a codec for a Set<T> given a codec for T
+	 * @param <T> The type to make a set of
+	 * @param codec A codec for the type to make a set of
+	 * @return A codec for a Set of Ts
+	 */
+	public static <T> Codec<Set<T>> makeSetCodec(Codec<T> codec)
+	{
+		return codec.listOf().xmap(Sets::newHashSet, Lists::newArrayList);
+	}
 }

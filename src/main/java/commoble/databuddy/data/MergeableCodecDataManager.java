@@ -229,7 +229,7 @@ public class MergeableCodecDataManager<RAW, FINE> extends ReloadListener<Map<Res
 		{
 			LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
 		}
-		catch(NullPointerException e)
+		catch(Exception e)
 		{
 			isServer = false;
 		}

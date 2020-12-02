@@ -230,7 +230,7 @@ public class MergeableJsonDataManager<RAW, FINE> extends ReloadListener<Map<Reso
 		{
 			LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
 		}
-		catch(NullPointerException e)
+		catch(Exception e)
 		{
 			isServer = false;
 		}
