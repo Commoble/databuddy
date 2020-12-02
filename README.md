@@ -39,8 +39,8 @@ configurations {
 dependencies {
 	compile fg.deobf("commoble.databuddy:${databuddy_branch}:${databuddy_version}")
 	shade fg.deobf("commoble.databuddy:${databuddy_branch}:${databuddy_version}")
-	// where ${databuddy_branch} is e.g. databuddy-1.16.3
-	// where ${databuddy_version} is e.g. 1.7.0.0
+	// where ${databuddy_branch} is e.g. databuddy-1.16.4
+	// where ${databuddy_version} is e.g. 1.7.4.0
 }
 
 shadowJar {

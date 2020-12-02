@@ -41,7 +41,7 @@ public class SetCodecHelper
 	@Deprecated
 	/**
 	 * @deprecated Moved to ExtraCodecs.makeSetCodec as this current class is very superfluous and will be removed in 1.17
-	 * Creates a codec for a Set<T> given a codec for T
+	 * Creates a codec for a Set given a codec for T
 	 * @param <T> The type to make a set of
 	 * @param codec A codec for the type to make a set of
 	 * @return A codec for a Set of Ts
