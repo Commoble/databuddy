@@ -46,6 +46,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
@@ -91,7 +92,7 @@ public class MergeableCodecDataManager<RAW, FINE> extends ReloadListener<Map<Res
 	private final Codec<RAW> codec;
 	private final Function<List<RAW>, FINE> merger;
 	private final Gson gson;
-	private Optional<Runnable> syncOnReloadCallback = Optional.empty();
+	private Runnable syncOnReloadCallback = Runnables.doNothing();
 	
 	/**
 	 * Initialize a data manager with the given folder name, codec, and merger
@@ -227,7 +228,7 @@ public class MergeableCodecDataManager<RAW, FINE> extends ReloadListener<Map<Res
 		if (ServerLifecycleHooks.getCurrentServer() != null)
 		{
 			// if we're on the server and we are configured to send syncing packets, send syncing packets
-			this.syncOnReloadCallback.ifPresent(Runnable::run);
+			this.syncOnReloadCallback.run();
 		}
 	}
 
@@ -246,7 +247,7 @@ public class MergeableCodecDataManager<RAW, FINE> extends ReloadListener<Map<Res
 		final Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
 	{
 		MinecraftForge.EVENT_BUS.addListener(this.getLoginListener(channel, packetFactory));
-		this.syncOnReloadCallback = Optional.of(() -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data)));
+		this.syncOnReloadCallback = () -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data));
 		return this;
 	}
 	

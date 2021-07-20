@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
@@ -125,7 +126,7 @@ public class CodecJsonDataManager<T> extends JsonReloadListener
 	
 	/** The raw data that we parsed from json last time resources were reloaded **/
 	protected Map<ResourceLocation, T> data = new HashMap<>();
-	private Optional<Runnable> syncOnReloadCallback = Optional.empty();
+	private Runnable syncOnReloadCallback = Runnables.doNothing();
 	
 	/**
 	 * Creates a data manager with a standard gson parser
@@ -178,7 +179,7 @@ public class CodecJsonDataManager<T> extends JsonReloadListener
 		if (ServerLifecycleHooks.getCurrentServer() != null)
 		{
 			// if we're on the server and we are configured to send syncing packets, send syncing packets
-			this.syncOnReloadCallback.ifPresent(Runnable::run);
+			this.syncOnReloadCallback.run();
 		}
 	}
 
@@ -216,7 +217,7 @@ public class CodecJsonDataManager<T> extends JsonReloadListener
 		final Function<Map<ResourceLocation, T>, PACKET> packetFactory)
 	{
 		MinecraftForge.EVENT_BUS.addListener(this.getLoginListener(channel, packetFactory));
-		this.syncOnReloadCallback = Optional.of(() -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data)));
+		this.syncOnReloadCallback = () -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data));
 		return this;
 	}
 	
