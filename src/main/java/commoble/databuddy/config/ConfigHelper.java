@@ -312,6 +312,25 @@ public class ConfigHelper
 		}
 
 		@Override
+		public DataResult<Boolean> getBooleanValue(Object input)
+		{
+			if (input instanceof Boolean)
+				return DataResult.success((Boolean)input);
+			else if (input instanceof Number) // ensures we don't reset old configs that were serializing 1/0 for bool fields
+			{
+				return DataResult.success(((Number)input).intValue() > 0);
+			}
+			else
+				return DataResult.error("Not a boolean: " + input);
+		}
+
+		@Override
+		public Object createBoolean(boolean value)
+		{
+			return new Boolean(value);
+		}
+
+		@Override
 		public boolean compressMaps()
 		{
 			return false;
@@ -372,7 +391,6 @@ public class ConfigHelper
 			{
 				return DataResult.error("key is not a string: " + key, map);
 			}
-			Optional<String> result = stringResult.result();
 			return stringResult.flatMap(s ->{
 
 				final Config output = TomlFormat.newConfig();
@@ -441,59 +459,6 @@ public class ConfigHelper
 		public String toString()
 		{
 			return "TOML";
-		}
-
-		@Override
-		public RecordBuilder<Object> mapBuilder()
-		{
-			return DynamicOps.super.mapBuilder();
-		}
-		
-		class TomlRecordBuilder extends RecordBuilder.AbstractStringBuilder<Object, Config>
-		{
-
-			protected TomlRecordBuilder()
-			{
-				super(TomlConfigOps.this);
-			}
-
-			@Override
-			protected Config initBuilder()
-			{
-				return TomlFormat.newConfig();
-			}
-
-			@Override
-			protected Config append(String key, Object value, Config builder)
-			{
-				builder.add(key, value);
-				return builder;
-			}
-
-			@Override
-			protected DataResult<Object> build(Config builder, Object prefix)
-			{
-				if (prefix == null || prefix instanceof NullObject)
-				{
-					return DataResult.success(builder);
-				}
-				if (prefix instanceof Config)
-				{
-					final Config result = TomlFormat.newConfig();
-					final Config oldConfig = (Config)prefix;
-					for (Entry entry : oldConfig.entrySet())
-					{
-						result.add(entry.getKey(), entry.getValue());
-					}
-					for (Entry entry : builder.entrySet())
-					{
-						result.add(entry.getKey(), entry.getValue());
-					}
-					return DataResult.success(result);
-				}
-				return DataResult.error("mergeToMap called with not a Config: " + prefix, prefix);
-			}
-			
 		}
 	}
 

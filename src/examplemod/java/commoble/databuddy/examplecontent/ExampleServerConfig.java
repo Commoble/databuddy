@@ -35,7 +35,8 @@ public class ExampleServerConfig
 				Lists.newArrayList(
 					new ResourceLocation("minecraft:dirt"),
 					new ResourceLocation("minecraft:clay"),
-					new ResourceLocation("minecraft:iron"))));
+					new ResourceLocation("minecraft:iron")),
+					true));
 		builder.pop();
 	}
 	
@@ -43,22 +44,25 @@ public class ExampleServerConfig
 	{
 		public static final Codec<TestObject> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 				BlockPos.CODEC.fieldOf("pos").forGetter(TestObject::getPos),
-				ResourceLocation.CODEC.listOf().fieldOf("ids").forGetter(TestObject::getIDs)
+				ResourceLocation.CODEC.listOf().fieldOf("ids").forGetter(TestObject::getIDs),
+				Codec.BOOL.fieldOf("bool").forGetter(TestObject::getBool)
 			).apply(instance, TestObject::new));
 		
 		private final BlockPos pos;	public BlockPos getPos() { return this.pos; }
 		private final List<ResourceLocation> ids;	public List<ResourceLocation> getIDs() { return this.ids; }
+		private final boolean bool; public boolean getBool() { return this.bool; }
 		
-		public TestObject(BlockPos pos, List<ResourceLocation> ids)
+		public TestObject(BlockPos pos, List<ResourceLocation> ids, boolean bool)
 		{
 			this.pos = pos;
 			this.ids = ids;
+			this.bool = bool;
 		}
 
 		@Override
 		public String toString()
 		{
-			return String.format("Pos: {%s}, IDs: {%s}", this.pos, this.ids);
+			return String.format("Pos: {%s}, IDs: {%s}, Bool: {%s}", this.pos, this.ids, this.bool);
 		}		
 	}
 }
