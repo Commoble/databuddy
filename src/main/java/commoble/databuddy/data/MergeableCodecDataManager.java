@@ -66,6 +66,7 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 /**
  * Generic data loader for Codec-parsable data.
@@ -223,17 +224,7 @@ public class MergeableCodecDataManager<RAW, FINE> extends ReloadListener<Map<Res
 		this.data = processedData;
 		this.logger.info("Data loader for {} loaded {} finalized objects", this.folderName, this.data.size());
 		
-		// hacky server test until we can find a better way to do this
-		boolean isServer = true;
-		try
-		{
-			LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
-		}
-		catch(Exception e)
-		{
-			isServer = false;
-		}
-		if (isServer)
+		if (ServerLifecycleHooks.getCurrentServer() != null)
 		{
 			// if we're on the server and we are configured to send syncing packets, send syncing packets
 			this.syncOnReloadCallback.ifPresent(Runnable::run);
