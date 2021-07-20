@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 import com.mojang.serialization.Codec;
 
-import commoble.databuddy.codec.SetCodecHelper;
+import commoble.databuddy.codec.ExtraCodecs;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.network.PacketBuffer;
@@ -17,7 +17,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 public class FlavorTagSyncPacket
 {
 	private static final Codec<Map<ResourceLocation, Set<ResourceLocation>>> MAPPER =
-		Codec.unboundedMap(ResourceLocation.CODEC, SetCodecHelper.makeSetCodec(ResourceLocation.CODEC));
+		Codec.unboundedMap(ResourceLocation.CODEC, ExtraCodecs.makeSetCodec(ResourceLocation.CODEC));
 	
 	private final Map<ResourceLocation, Set<ResourceLocation>> map;
 		
