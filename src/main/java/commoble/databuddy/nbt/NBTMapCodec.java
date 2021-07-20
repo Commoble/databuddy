@@ -41,7 +41,7 @@ import net.minecraftforge.common.util.Constants;
  * @param KEY the type of the Map's keys
  * @param VALUE the type of the Map's values
  * @author Joseph aka Commoble
- * @deprecated see commoble.databuddy.codec.MapCodecHelper as it uses actual mojang Codecs and also supports json
+ * @deprecated prefer using Codecs to read and write NBT where possible
  */
 @Deprecated
 public class NBTMapCodec<KEY, VALUE>

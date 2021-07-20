@@ -5,9 +5,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 
-import commoble.databuddy.codec.ExtraCodecs;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.network.PacketBuffer;
@@ -17,7 +18,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 public class FlavorTagSyncPacket
 {
 	private static final Codec<Map<ResourceLocation, Set<ResourceLocation>>> MAPPER =
-		Codec.unboundedMap(ResourceLocation.CODEC, ExtraCodecs.makeSetCodec(ResourceLocation.CODEC));
+		Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC.listOf().xmap(ImmutableSet::copyOf, ImmutableList::copyOf));
 	
 	private final Map<ResourceLocation, Set<ResourceLocation>> map;
 		

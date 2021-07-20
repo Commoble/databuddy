@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import commoble.databuddy.codec.MapCodecHelper;
 import net.minecraft.nbt.ByteNBT;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.DoubleNBT;
