@@ -31,42 +31,42 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import net.minecraft.nbt.ByteNBT;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.DoubleNBT;
-import net.minecraft.nbt.FloatNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.IntNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.ShortNBT;
-import net.minecraft.nbt.StringNBT;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.ShortTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraftforge.common.util.Constants;
 
 /**
  * Helper class for converting lists or list-like collections of arbitrary data to NBT and back.
  * 
  * @param ENTRY the data type in the actual java list, i.e. {@literal List<ENTRY>}
- * @param RAW either a primitive or an NBT collection type, see ListNBTType instances
- * @deprecated Consider using mojang codecs and Codec::listOf, see {@link MapCodecHelper} and <a href=https://gist.github.com/Drullkus/1bca3f2d7f048b1fe03be97c28f87910> Drullkus's codec primer</a>
+ * @param RAW either a primitive or an NBT collection type, see ListTagType instances
+ * @deprecated Consider using mojang codecs and Codec::listOf
  */
 @Deprecated
 public class NBTListCodec<ENTRY, RAW>
 {
 	private final String name;
-	private final ListNBTType<RAW> type;
-	private final Function<ENTRY, INBT> elementWriter;
+	private final ListTagType<RAW> type;
+	private final Function<ENTRY, Tag> elementWriter;
 	private final Function<RAW, ENTRY> elementReader;
 	
 	/**
 	 * 
 	 * @param name A string to use as the field name when we write the list into existing nbt
-	 * @param type A ListNBTType that describes how to get data out of the list and convert primitives to NBT
+	 * @param type A ListTagType that describes how to get data out of the list and convert primitives to NBT
 	 * @param elementWriter A function that converts an entry instance to the intermediate raw type
 	 * @param elementReader A function that converts the raw instance back into an entry instance
 	 */
 	public NBTListCodec(
 			String name,
-			ListNBTType<RAW> type,
+			ListTagType<RAW> type,
 			Function<ENTRY, RAW> elementWriter,
 			Function<RAW, ENTRY> elementReader)
 	{
@@ -77,40 +77,40 @@ public class NBTListCodec<ENTRY, RAW>
 	}
 	
 	/**
-	 * Reconstructs and returns a {@literal List<ENTRY>} from a CompoundNBT
+	 * Reconstructs and returns a {@literal List<ENTRY>} from a CompoundTag
 	 * If the nbt used was given by this.write(list), the list returned will be a reconstruction of the original List
-	 * @param compound The CompoundNBT to read and construct the List from
-	 * @return A List that the data contained in the CompoundNBT represents
+	 * @param compound The CompoundTag to read and construct the List from
+	 * @return A List that the data contained in the CompoundTag represents
 	 */
-	public List<ENTRY> read(final CompoundNBT compound)
+	public List<ENTRY> read(final CompoundTag compound)
 	{
 		final List<ENTRY> newList = new ArrayList<>();
 		
-		final ListNBT listNBT = compound.getList(this.name, this.type.tagID);
-		if (listNBT == null)
+		final ListTag ListTag = compound.getList(this.name, this.type.tagID);
+		if (ListTag == null)
 			return newList;
 		
-		final int listSize = listNBT.size();
+		final int listSize = ListTag.size();
 		
 		if (listSize <= 0)
 			return newList;
 		
-		IntStream.range(0, listSize).mapToObj(i -> this.type.listReader.apply(listNBT, i))
+		IntStream.range(0, listSize).mapToObj(i -> this.type.listReader.apply(ListTag, i))
 			.forEach(nbt -> newList.add(this.elementReader.apply(nbt)));
 		
 		return newList;
 	}
 	
 	/**
-	 * Given a list and a CompoundNBT,writes the contents of that list into the NBT
-	 * The same CompoundNBT can be given to this.read to retrieve that map 
+	 * Given a list and a CompoundTag,writes the contents of that list into the NBT
+	 * The same CompoundTag can be given to this.read to retrieve that map 
 	 * @param list A {@literal List<ENTRY>} to write into the nbt
-	 * @param compound A CompoundNBT to write the list into
-	 * @return A CompoundNBT that, when used as the argument to this.read(nbt), will cause that function to reconstruct and return a copy of the original list
+	 * @param compound A CompoundTag to write the list into
+	 * @return A CompoundTag that, when used as the argument to this.read(nbt), will cause that function to reconstruct and return a copy of the original list
 	 */
-	public CompoundNBT write(final List<ENTRY> list, final CompoundNBT compound)
+	public CompoundTag write(final List<ENTRY> list, final CompoundTag compound)
 	{
-		final ListNBT nbtList = new ListNBT();
+		final ListTag nbtList = new ListTag();
 		
 		list.forEach(element -> nbtList.add(this.elementWriter.apply(element)));
 		
@@ -121,8 +121,8 @@ public class NBTListCodec<ENTRY, RAW>
 	
 	/**
 	 * Represents a function that takes a list NBT and an index and returns the object in the list at that index.
-	 * T must match the NBT type of the ListNBT's element or the type of the object they represent,
-	 * e.g. Integer, String, CompoundNBT, etc
+	 * T must match the NBT type of the ListTag's element or the type of the object they represent,
+	 * e.g. Integer, String, CompoundTag, etc
 	 */
 	@FunctionalInterface
 	public static interface ListReader<T>
@@ -133,27 +133,27 @@ public class NBTListCodec<ENTRY, RAW>
 		 * @param index an index in the list
 		 * @return an nbt element at the given index in the list
 		 */
-		public T apply(ListNBT list, int index);
+		public T apply(ListTag list, int index);
 	}
 	
-	public static class ListNBTType<RAW>
+	public static class ListTagType<RAW>
 	{
-		public static final ListNBTType<Byte> BYTE = new ListNBTType<>(Constants.NBT.TAG_BYTE, (list, i) -> (byte)(list.getInt(i)), ByteNBT::valueOf);
-		public static final ListNBTType<Short> SHORT = new ListNBTType<>(Constants.NBT.TAG_SHORT, ListNBT::getShort, ShortNBT::valueOf);
-		public static final ListNBTType<Integer> INTEGER = new ListNBTType<>(Constants.NBT.TAG_INT, ListNBT::getInt, IntNBT::valueOf);
+		public static final ListTagType<Byte> BYTE = new ListTagType<>(Constants.NBT.TAG_BYTE, (list, i) -> (byte)(list.getInt(i)), ByteTag::valueOf);
+		public static final ListTagType<Short> SHORT = new ListTagType<>(Constants.NBT.TAG_SHORT, ListTag::getShort, ShortTag::valueOf);
+		public static final ListTagType<Integer> INTEGER = new ListTagType<>(Constants.NBT.TAG_INT, ListTag::getInt, IntTag::valueOf);
 		//public static final NBTType<Long> LONG = new NBTType<>(Constants.NBT.TAG_LONG, lists do not have long getter, LongNBT::valueOf);
-		public static final ListNBTType<Float> FLOAT = new ListNBTType<>(Constants.NBT.TAG_FLOAT, ListNBT::getFloat, FloatNBT::valueOf);
-		public static final ListNBTType<Double> DOUBLE = new ListNBTType<>(Constants.NBT.TAG_DOUBLE, ListNBT::getDouble, DoubleNBT::valueOf);
-		public static final ListNBTType<String> STRING = new ListNBTType<>(Constants.NBT.TAG_STRING, ListNBT::getString, StringNBT::valueOf);
-		public static final ListNBTType<ListNBT> LIST = new ListNBTType<>(Constants.NBT.TAG_LIST, ListNBT::getList, x->x);
-		public static final ListNBTType<CompoundNBT> COMPOUND = new ListNBTType<>(Constants.NBT.TAG_COMPOUND, ListNBT::getCompound, x->x);
+		public static final ListTagType<Float> FLOAT = new ListTagType<>(Constants.NBT.TAG_FLOAT, ListTag::getFloat, FloatTag::valueOf);
+		public static final ListTagType<Double> DOUBLE = new ListTagType<>(Constants.NBT.TAG_DOUBLE, ListTag::getDouble, DoubleTag::valueOf);
+		public static final ListTagType<String> STRING = new ListTagType<>(Constants.NBT.TAG_STRING, ListTag::getString, StringTag::valueOf);
+		public static final ListTagType<ListTag> LIST = new ListTagType<>(Constants.NBT.TAG_LIST, ListTag::getList, x->x);
+		public static final ListTagType<CompoundTag> COMPOUND = new ListTagType<>(Constants.NBT.TAG_COMPOUND, ListTag::getCompound, x->x);
 		
-		/** see forge's Constants.NBT, needed for ListNBTs to work safely **/
+		/** see forge's Constants.NBT, needed for ListTags to work safely **/
 		final int tagID;
 		final ListReader<RAW> listReader;
-		final Function<RAW, INBT> serializer;
+		final Function<RAW, Tag> serializer;
 		
-		public ListNBTType(int tagID, ListReader<RAW> listReader, Function<RAW, INBT> serializer)
+		public ListTagType(int tagID, ListReader<RAW> listReader, Function<RAW, Tag> serializer)
 		{
 			this.tagID = tagID;
 			this.listReader = listReader;

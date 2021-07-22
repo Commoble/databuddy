@@ -1,12 +1,12 @@
 
 buildscript {
     repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://maven.minecraftforge.net' }
         jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
@@ -18,7 +18,7 @@ version = "${mod_version}"
 group = "commoble.${modid}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "${modid}-${mc_version}"
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
 
 sourceSets {
 	main
@@ -27,7 +27,7 @@ sourceSets {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: "${mappings_version}"    
+    mappings channel: 'official', version: "${mappings_version}"    
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     
 	// these run configs allow the examplemod to be run in a forge-ready workspace
@@ -81,7 +81,7 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
-    compile group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.7.0'
+    implementation group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.7.0'
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 }

@@ -9,8 +9,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import commoble.databuddy.config.ConfigHelper;
 import commoble.databuddy.config.ConfigHelper.ConfigObjectListener;
 import commoble.databuddy.config.ConfigHelper.ConfigValueListener;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class ExampleServerConfig

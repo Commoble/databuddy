@@ -118,8 +118,8 @@ public class PluginLoader
 
 		// get the names of all classes annotated with the plugin annotation
 		ModList.get().getAllScanData().stream().flatMap(modData -> modData.getAnnotations().stream())
-			.filter(annotationData -> Objects.equals(annotationData.getAnnotationType(), annotationType))
-			.map(AnnotationData::getMemberName)
+			.filter(annotationData -> Objects.equals(annotationData.annotationType(), annotationType))
+			.map(AnnotationData::memberName)
 			
 			// try to create instances of these classes
 			.map(className -> PluginLoader.createPluginInstance(pluginInterface, className))

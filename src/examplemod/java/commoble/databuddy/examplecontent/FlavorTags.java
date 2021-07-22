@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import com.google.common.collect.Sets;
 
 import commoble.databuddy.data.MergeableCodecDataManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class FlavorTags
 {

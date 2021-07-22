@@ -12,8 +12,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.NBTDynamicOps;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 
 public class NullableFieldTests
 {
@@ -56,8 +56,8 @@ public class NullableFieldTests
 	@Test
 	void testNullEncoding()
 	{
-		int result = DEFAULT_FIELD_CODEC.encodeStart(NBTDynamicOps.INSTANCE, null)
-			.flatMap(nbt -> DEFAULT_FIELD_CODEC.decode(NBTDynamicOps.INSTANCE, nbt))
+		int result = DEFAULT_FIELD_CODEC.encodeStart(NbtOps.INSTANCE, null)
+			.flatMap(nbt -> DEFAULT_FIELD_CODEC.decode(NbtOps.INSTANCE, nbt))
 			.result().get().getFirst();
 		
 		Assertions.assertEquals(5, result);
@@ -102,8 +102,8 @@ public class NullableFieldTests
 	@Test
 	void testNullOptionalEncoding()
 	{
-		Optional<Integer> result = OPTIONAL_FIELD_CODEC.encodeStart(NBTDynamicOps.INSTANCE, Optional.empty())
-			.flatMap(nbt -> OPTIONAL_FIELD_CODEC.decode(NBTDynamicOps.INSTANCE, nbt))
+		Optional<Integer> result = OPTIONAL_FIELD_CODEC.encodeStart(NbtOps.INSTANCE, Optional.empty())
+			.flatMap(nbt -> OPTIONAL_FIELD_CODEC.decode(NbtOps.INSTANCE, nbt))
 			.result().get().getFirst();
 
 		Assertions.assertFalse(result.isPresent());
@@ -113,8 +113,8 @@ public class NullableFieldTests
 	void testNullOptionalNPE()
 	{
 		Assertions.assertThrows(NullPointerException.class, () ->
-			OPTIONAL_FIELD_CODEC.encodeStart(NBTDynamicOps.INSTANCE, null)
-				.flatMap(nbt -> OPTIONAL_FIELD_CODEC.decode(NBTDynamicOps.INSTANCE, nbt))
+			OPTIONAL_FIELD_CODEC.encodeStart(NbtOps.INSTANCE, null)
+				.flatMap(nbt -> OPTIONAL_FIELD_CODEC.decode(NbtOps.INSTANCE, nbt))
 				.result().get().getFirst());
 	}
 	
@@ -126,8 +126,8 @@ public class NullableFieldTests
 			.result()
 			.get()
 			.getFirst();
-		INBT nbt = codec.encodeStart(NBTDynamicOps.INSTANCE, thingAfterRead).result().get();
-		T thingAfterNBT = codec.decode(NBTDynamicOps.INSTANCE, nbt).result().get().getFirst();
+		Tag nbt = codec.encodeStart(NbtOps.INSTANCE, thingAfterRead).result().get();
+		T thingAfterNBT = codec.decode(NbtOps.INSTANCE, nbt).result().get().getFirst();
 		JsonElement jsonAgain = codec.encodeStart(JsonOps.INSTANCE, thingAfterNBT).result().get();
 		T finalThing = codec.decode(JsonOps.INSTANCE, jsonAgain).result().get().getFirst();
 		

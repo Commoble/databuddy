@@ -9,11 +9,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTDynamicOps;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 public class FlavorTagSyncPacket
 {
@@ -27,14 +27,14 @@ public class FlavorTagSyncPacket
 		this.map = map;
 	}
 	
-	public void encode(PacketBuffer buffer)
+	public void encode(FriendlyByteBuf buffer)
 	{
-		buffer.writeCompoundTag((CompoundNBT)(MAPPER.encodeStart(NBTDynamicOps.INSTANCE, this.map).result().orElse(new CompoundNBT())));
+		buffer.writeNbt((CompoundTag)(MAPPER.encodeStart(NbtOps.INSTANCE, this.map).result().orElse(new CompoundTag())));
 	}
 	
-	public static FlavorTagSyncPacket decode(PacketBuffer buffer)
+	public static FlavorTagSyncPacket decode(FriendlyByteBuf buffer)
 	{
-		return new FlavorTagSyncPacket(MAPPER.parse(NBTDynamicOps.INSTANCE, buffer.readCompoundTag()).result().orElse(new HashMap<>()));
+		return new FlavorTagSyncPacket(MAPPER.parse(NbtOps.INSTANCE, buffer.readNbt()).result().orElse(new HashMap<>()));
 	}
 	
 	public void onPacketReceived(Supplier<NetworkEvent.Context> contextGetter)
