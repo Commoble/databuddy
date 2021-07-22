@@ -45,8 +45,8 @@ import net.minecraftforge.common.util.Constants;
 /**
  * Helper class for converting lists or list-like collections of arbitrary data to NBT and back.
  * 
- * @param ENTRY the data type in the actual java list, i.e. {@literal List<ENTRY>}
- * @param RAW either a primitive or an NBT collection type, see ListTagType instances
+ * @param <ENTRY> the data type in the actual java list, i.e. {@literal List<ENTRY>}
+ * @param <RAW> either a primitive or an NBT collection type, see ListTagType instances
  * @deprecated Consider using mojang codecs and Codec::listOf
  */
 @Deprecated
