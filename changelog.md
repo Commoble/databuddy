@@ -1,3 +1,6 @@
+# 2.0.0.1
+* Add JsonDataProvider class, a data provider for generating jsons from codecs
+
 # 2.0.0.0
 * PluginLoader no longer requires that callers provide a logger (they can log their own things)
   * A new static method provides a list of error results, the old method has become deprecated and will be removed in 1.18
