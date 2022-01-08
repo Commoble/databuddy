@@ -45,7 +45,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
@@ -59,12 +58,11 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor.PacketTarget;
 import net.minecraftforge.network.simple.SimpleChannel;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 /**
  * Generic data loader for Codec-parsable data.
@@ -89,7 +87,6 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 	private final Codec<RAW> codec;
 	private final Function<List<RAW>, FINE> merger;
 	private final Gson gson;
-	private Runnable syncOnReloadCallback = Runnables.doNothing();
 	
 	/**
 	 * Initialize a data manager with the given folder name, codec, and merger
@@ -221,20 +218,12 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 		// now that we're on the main thread, we can finalize the data
 		this.data = processedData;
 		this.logger.info("Data loader for {} loaded {} finalized objects", this.folderName, this.data.size());
-		
-		if (ServerLifecycleHooks.getCurrentServer() != null)
-		{
-			// if we're on the server and we are configured to send syncing packets, send syncing packets
-			this.syncOnReloadCallback.run();
-		}
 	}
 
 	/**
-	 * This should be called at most once, in a mod constructor (FMLCommonSetupEvent *may* work as well)
-	 * Calling this method in static init may cause it to be called later than it should be.
-	 * Calling this method A) causes the data manager to send a data-syncing packet to all players when a server /reloads data,
-	 * and B) subscribes the data manager to the PlayerLoggedIn event to allow it to sync itself to players when they log in.
-	 * Be aware that the invoker must still manually subscribe the relevant packet type to the channel themselves.
+	 * This should be called at most once, during construction of your mod (static init of your main mod class is fine)
+	 * (FMLCommonSetupEvent *may* work as well)
+	 * Calling this method automatically subscribes a packet-sender to {@link OnDatapackSyncEvent}.
 	 * @param <PACKET> the packet type that will be sent on the given channel
 	 * @param channel The networking channel of your mod
 	 * @param packetFactory  A packet constructor or factory method that converts the given map to a packet object to send on the given channel
@@ -243,21 +232,21 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 	public <PACKET> MergeableCodecDataManager<RAW, FINE> subscribeAsSyncable(final SimpleChannel channel,
 		final Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
 	{
-		MinecraftForge.EVENT_BUS.addListener(this.getLoginListener(channel, packetFactory));
-		this.syncOnReloadCallback = () -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data));
+		MinecraftForge.EVENT_BUS.addListener(this.getDatapackSyncListener(channel, packetFactory));
 		return this;
 	}
 	
-	/** Generate an event listener function for the player-login-event **/
-	private <PACKET> Consumer<PlayerEvent.PlayerLoggedInEvent> getLoginListener(final SimpleChannel channel,
+	/** Generate an event listener function for the on-datapack-sync event **/
+	private <PACKET> Consumer<OnDatapackSyncEvent> getDatapackSyncListener(final SimpleChannel channel,
 		final Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
 	{
 		return event -> {
-			Player player = event.getPlayer();
-			if (player instanceof ServerPlayer serverPlayer)
-			{
-				channel.send(PacketDistributor.PLAYER.with(() -> serverPlayer), packetFactory.apply(this.data));
-			}
+			ServerPlayer player = event.getPlayer();
+			PACKET packet = packetFactory.apply(this.data);
+			PacketTarget target = player == null
+				? PacketDistributor.ALL.noArg()
+				: PacketDistributor.PLAYER.with(() -> player);
+			channel.send(target, packet);
 		};
 	}
 }

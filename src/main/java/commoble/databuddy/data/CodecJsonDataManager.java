@@ -36,7 +36,6 @@ import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.Logger;
 
-import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
@@ -47,66 +46,18 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor.PacketTarget;
 import net.minecraftforge.network.simple.SimpleChannel;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 /**
- * <p>See drullkus's primer on what codecs are and how to assemble them:<br>
- * https://gist.github.com/Drullkus/1bca3f2d7f048b1fe03be97c28f87910</p>
- * 
- * <p>Usage for this is as follows:</p>
- * 
- * <p>A) Make a codec for your json<br>
- * e.g. if you have a json like</p>
- * 
- * <pre>
- * {
- * 	"value": "some:block"
- * }</pre>
- * 
- * And we have a data class that looks like<br>
- * <pre>
- * public class BlockHolder
- * {
- * 	public final Block block;
- * 	public BlockHolder(Block block) {this.block = block;}
- * }
- * </pre>
- * 
- * Then we can make a codec via<br>
- * <pre>
- * // use the ResourceLocation codec to create a Block codec
- * Codec{@literal <Block>} BLOCK_CODEC = ResourceLocation.CODEC.xmap(ForgeRegistries.BLOCKS::getValue, Block::getRegistryName);
- * // use that to build a codec for BlockHolder. RecordCodecBuilder builds codecs that deserialize {}objects or CompoundNBTs.
- * Codec{@literal <BlockHolder>} BLOCK_HOLDER_CODEC = RecordCodecBuilder.create(instance {@literal ->} instance.group(
- * 		// we can stuff up to 16 fields into the group method, using a codec for each field...
- * 		BLOCK_CODEC.fieldOf("block").forGetter(blockHolder {@literal ->} blockHolder.block)
- * 	).apply(instance, BlockHolder::new); // use the constructor to finish assembling the codec
- * </pre>
- * 
- * <p>B) Now that we have a codec, we can register our data manager to the server as a reload listener</p>
- * <pre>
- * public static final CodecJsonDataManager{@literal <BlockHolder>} BLOCK_HOLDERS = new CodecJsonDataManager("block_holders", BLOCK_HOLDER_CODEC, LOGGER);
- * public static void onAddReloadListeners(AddReloadListenerEvent event)
- * {
- * 	event.addListener(BLOCK_HOLDERS);
- * }
- * </pre>
- * <p>The above event runs during server init. The data manager's map will be recreated during server init and when
- * somebody uses the /reload command. Storing this in a static field should be safe in most cases, but if somebody
- * were to somehow be running multiple servers at once then problems may occur.</p>
- * 
- * <p>Finally, we can use BLOCK_HOLDERS.getData("some_modid:some_json") to get the data
- * represented by the json at data/modid/block_holders/some_json.json</p>
- * 
- * <p>The folder name that we specified as "block_holders" can potentially include subfolders in the name as well,
- * so we (the people who made the data loader) could use our own modid as part of the folder name to avoid
- * name collisions, e.g. using "blockholdermod/block_holders" as the folder name would result in a json with the
- * id "bananas:banana_block" to be located at data/bananas/blockholdermod/block_holders/some_json.json</p>
+ * Codec-based data manager for loading data.
+ * This works best if initialized during your mod's construction.
+ * After creating the manager, subscribeAsSyncable can optionally be called on it to subscribe the manager
+ * to the forge events necessary for syncing datapack data to clients.
+ * @param <T> The type of the objects that the codec is parsing jsons as
  */
 public class CodecJsonDataManager<T> extends SimpleJsonResourceReloadListener
 {
@@ -123,7 +74,6 @@ public class CodecJsonDataManager<T> extends SimpleJsonResourceReloadListener
 	
 	/** The raw data that we parsed from json last time resources were reloaded **/
 	protected Map<ResourceLocation, T> data = new HashMap<>();
-	private Runnable syncOnReloadCallback = Runnables.doNothing();
 	
 	/**
 	 * Creates a data manager with a standard gson parser
@@ -173,11 +123,6 @@ public class CodecJsonDataManager<T> extends SimpleJsonResourceReloadListener
 		this.logger.info("Beginning loading of data for data loader: {}", this.folderName);
 		this.data = this.mapValues(jsons);
 		this.logger.info("Data loader for {} loaded {} jsons", this.folderName, this.data.size());
-		if (ServerLifecycleHooks.getCurrentServer() != null)
-		{
-			// if we're on the server and we are configured to send syncing packets, send syncing packets
-			this.syncOnReloadCallback.run();
-		}
 	}
 
 	private Map<ResourceLocation, T> mapValues(Map<ResourceLocation, JsonElement> inputs)
@@ -200,11 +145,9 @@ public class CodecJsonDataManager<T> extends SimpleJsonResourceReloadListener
 	}
 
 	/**
-	 * This should be called at most once, in a mod constructor (FMLCommonSetupEvent *may* work as well)
-	 * Calling this method in static init may cause it to be called later than it should be.
-	 * Calling this method A) causes the data manager to send a data-syncing packet to all players when a server /reloads data,
-	 * and B) subscribes the data manager to the PlayerLoggedIn event to allow it to sync itself to players when they log in.
-	 * Be aware that the invoker must still manually subscribe the relevant packet type to the channel themselves.
+	 * This should be called at most once, during construction of your mod (static init of your main mod class is fine)
+	 * (FMLCommonSetupEvent *may* work as well)
+	 * Calling this method automatically subscribes a packet-sender to {@link OnDatapackSyncEvent}.
 	 * @param <PACKET> the packet type that will be sent on the given channel
 	 * @param channel The networking channel of your mod
 	 * @param packetFactory  A packet constructor or factory method that converts the given map to a packet object to send on the given channel
@@ -213,21 +156,21 @@ public class CodecJsonDataManager<T> extends SimpleJsonResourceReloadListener
 	public <PACKET> CodecJsonDataManager<T> subscribeAsSyncable(final SimpleChannel channel,
 		final Function<Map<ResourceLocation, T>, PACKET> packetFactory)
 	{
-		MinecraftForge.EVENT_BUS.addListener(this.getLoginListener(channel, packetFactory));
-		this.syncOnReloadCallback = () -> channel.send(PacketDistributor.ALL.noArg(), packetFactory.apply(this.data));
+		MinecraftForge.EVENT_BUS.addListener(this.getDatapackSyncListener(channel, packetFactory));
 		return this;
 	}
 	
-	/** Generate an event listener function for the player-login-event **/
-	private <PACKET> Consumer<PlayerEvent.PlayerLoggedInEvent> getLoginListener(final SimpleChannel channel,
+	/** Generate an event listener function for the on-datapack-sync event **/
+	private <PACKET> Consumer<OnDatapackSyncEvent> getDatapackSyncListener(final SimpleChannel channel,
 		final Function<Map<ResourceLocation, T>, PACKET> packetFactory)
 	{
 		return event -> {
-			Player player = event.getPlayer();
-			if (player instanceof ServerPlayer serverPlayer)
-			{
-				channel.send(PacketDistributor.PLAYER.with(() -> serverPlayer), packetFactory.apply(this.data));
-			}
+			ServerPlayer player = event.getPlayer();
+			PACKET packet = packetFactory.apply(this.data);
+			PacketTarget target = player == null
+				? PacketDistributor.ALL.noArg()
+				: PacketDistributor.PLAYER.with(() -> player);
+			channel.send(target, packet);
 		};
 	}
 }
