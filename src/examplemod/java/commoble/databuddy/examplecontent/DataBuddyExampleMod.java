@@ -1,5 +1,7 @@
 package commoble.databuddy.examplecontent;
 
+import java.util.function.Consumer;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,7 +12,6 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -23,7 +24,9 @@ public class DataBuddyExampleMod
 	public static final String MODID = "databuddy";
 	private static final Logger LOGGER = LogManager.getLogger();
 	
-	private final ExampleServerConfig config;
+	private final ExampleConfig config;
+	private final ExampleConfig firstConfig;
+	private final ExampleConfig secondConfig;
 	
 	private static final String CHANNEL_PROTOCOL = "0";
 	
@@ -41,10 +44,14 @@ public class DataBuddyExampleMod
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 		
-		// create and subscribe our config instance
+		// create and subscribe our config instances
 		this.config = ConfigHelper.register(
-			ModLoadingContext.get(), FMLJavaModLoadingContext.get(),
-			ModConfig.Type.SERVER, ExampleServerConfig::new);
+			ModConfig.Type.COMMON, ExampleConfig::create);
+		// example of specifying the config name to create subfolders
+		this.firstConfig = ConfigHelper.register(
+			ModConfig.Type.COMMON, ExampleConfig::create, "databuddy/first");
+		this.secondConfig = ConfigHelper.register(
+			ModConfig.Type.COMMON, ExampleConfig::create, "databuddy/secondconfig");
 		
 		this.registerPackets();
 		
@@ -79,13 +86,19 @@ public class DataBuddyExampleMod
 	void testData(PlayerInteractEvent.RightClickBlock event)
 	{
 		// fires on both client and server threads
-		LOGGER.debug(FlavorTags.DATA_LOADER.data);
+		LOGGER.info(FlavorTags.DATA_LOADER.data);
 	}
 	
 	void testConfig(BreakEvent event)
 	{
-		LOGGER.debug(config.bones.get());
-		LOGGER.debug(config.bananas.get());
-		LOGGER.debug(config.testObject.get());
+		Consumer<ExampleConfig> configLogger = c ->
+		{
+			LOGGER.info(c.bones().get());
+			LOGGER.info(c.bananas().get());
+			LOGGER.info(c.testObject().get());
+		};
+		configLogger.accept(this.config);
+		configLogger.accept(this.firstConfig);
+		configLogger.accept(this.secondConfig);
 	}
 }

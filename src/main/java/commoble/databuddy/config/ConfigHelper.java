@@ -26,15 +26,14 @@ package commoble.databuddy.config;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,176 +48,105 @@ import com.mojang.serialization.DataResult.PartialResult;
 import com.mojang.serialization.DynamicOps;
 
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.Builder;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 
 /**
- * Config helper for automatically subscribing forge configs to config reload events as you build them. See DataBuddyExampleMod and ExampleServerConfig in the examplemod for usage examples.
- * <p><a href=https://github.com/Commoble/databuddy/blob/1.16.3/src/examplemod/java/commoble/databuddy/examplecontent/DataBuddyExampleMod.java> Example mod on github </a></p>
- * <p><a href=https://github.com/Commoble/databuddy/blob/1.16.3/src/examplemod/java/commoble/databuddy/examplecontent/ExampleServerConfig.java> Example config class on github </a></p>
+ * Helper for creating configs and defining complex objects in configs 
  */
-public class ConfigHelper
+public record ConfigHelper(ForgeConfigSpec.Builder builder)
 {
 	static final Logger LOGGER = LogManager.getLogger();
+	
 	/**
-	 * As with the other register method, but the contexts are assumed
+	 * Register a config using a default config filename for your mod.
 	 * @param <T> The class of your config implementation
 	 * @param configType Forge config type:
 	 * <ul>
-	 * <li>SERVER configs are defined by the server and synced to clients
-	 * <li>COMMON configs are definable by both server and clients and not synced (they may have different values)
-	 * <li>CLIENT configs are defined by clients and not used on the server
+	 * <li>SERVER configs are defined by the server and synced to clients; individual configs are generated per-save. Filename will be modid-server.toml
+	 * <li>COMMON configs are definable by both server and clients and not synced (they may have different values). Filename will be modid-client.toml
+	 * <li>CLIENT configs are defined by clients and not used on the server. Filename will be modid-client.toml.
 	 * </ul>
-	 * @param configBuilder Typically the constructor for your config class
+	 * @param configFactory A constructor or factory for your config class
 	 * @return An instance of your config class
 	 */
 	public static <T> T register(
 		final ModConfig.Type configType,
-		final BiFunction<Builder, Subscriber, T> configBuilder)
+		final BiFunction<ForgeConfigSpec.Builder, ConfigHelper, T> configFactory)
 	{
-		return register(ModLoadingContext.get(), FMLJavaModLoadingContext.get(), configType, configBuilder);
+		return register(configType, configFactory, null);
 	}
 	
 	/**
-	 * Call this in your @Mod class constructor.
+	 * Register a config using a custom filename.
 	 * @param <T> Your config class
-	 * @param modContext mod context from ModLoadingContext.get()
-	 * @param fmlContext mod context from FMLJavaModLoadingContext.get()
 	 * @param configType Forge config type:
 	 * <ul>
-	 * <li>SERVER configs are defined by the server and synced to clients
+	 * <li>SERVER configs are defined by the server and synced to clients; individual configs are generated per-save.
 	 * <li>COMMON configs are definable by both server and clients and not synced (they may have different values)
 	 * <li>CLIENT configs are defined by clients and not used on the server
 	 * </ul>
-	 * @param configBuilder Typically the constructor for your config class
+	 * @param configFactory A constructor or factory for your config class
+	 * @param configName Name of your config file. Supports subfolders, e.g. "yourmod/yourconfig".
 	 * @return An instance of your config class
 	 */
 	public static <T> T register(
-		final ModLoadingContext modContext,
-		final FMLJavaModLoadingContext fmlContext,
 		final ModConfig.Type configType,
-		final BiFunction<Builder, Subscriber, T> configBuilder)
+		final BiFunction<ForgeConfigSpec.Builder, ConfigHelper, T> configFactory,
+		final @Nullable String configName)
 	{
-		final List<ConfigValueListener<?>> subscriptionList = new ArrayList<>();
-		final org.apache.commons.lang3.tuple.Pair<T, ForgeConfigSpec> entry = new ForgeConfigSpec.Builder().configure(thisBuilder -> configBuilder.apply(thisBuilder, getSubscriber(subscriptionList)));
+		final ModLoadingContext modContext = ModLoadingContext.get();
+		final org.apache.commons.lang3.tuple.Pair<T, ForgeConfigSpec> entry = new ForgeConfigSpec.Builder()
+			.configure(thisBuilder -> configFactory.apply(thisBuilder, new ConfigHelper(thisBuilder)));
 		final T config = entry.getLeft();
 		final ForgeConfigSpec spec = entry.getRight();
-		
-		modContext.registerConfig(configType, spec);
-		
-		final Consumer<ModConfigEvent> configUpdate = event ->
+		if (configName == null)
 		{
-			if(event.getConfig().getSpec() == spec)
-				for(ConfigValueListener<?> value : subscriptionList)
-					value.update();
-		};
-		
-		fmlContext.getModEventBus().addListener(configUpdate);
+			modContext.registerConfig(configType,spec);
+		}
+		else
+		{
+			modContext.registerConfig(configType, spec, configName + ".toml");
+		}
 		
 		return config;
 	}
 	
-	private static Subscriber getSubscriber(final List<ConfigValueListener<?>> list)
+	/**
+	 * Define a config value for a complex object.
+	 * @param <T> The type of the thing in the config we are making a listener for
+	 * @param builder the forge config builder
+	 * @param name The name of the field in your config that will hold objects of this type
+	 * @param codec A Codec for de/serializing your object type.
+	 * @param defaultObject The default instance of your config field. The given codec must be able to serialize this;
+	 * if it cannot, an exception will be intentionally thrown the first time the config attempts to load.
+	 * If the codec fails to deserialize the config field at a later time, an error message will be logged and this default instance will be used instead.  
+	 * @return A reload-sensitive wrapper around your config object value. Use ConfigObject#get to get the most up-to-date object.
+	 */
+	public <T> ConfigObject<T> defineObject(String name, Codec<T> codec, T defaultObject)
 	{
-		return new Subscriber(list);
+		DataResult<Object> encodeResult = codec.encodeStart(TomlConfigOps.INSTANCE, defaultObject);
+		Object encodedObject = encodeResult.getOrThrow(false, s -> LOGGER.error("Unable to encode default value: {}", s));
+		ConfigValue<Object> value = this.builder.define(name, encodedObject);
+		return new ConfigObject<>(value, codec, defaultObject, encodedObject);
 	}
 	
-	/** Subscriber instances are given to your config class's constructor **/
-	public static class Subscriber
+	/**
+	 * A config-reload-sensitive wrapper around a config field for a complex object
+	 **/
+	public static class ConfigObject<T> implements Supplier<T>
 	{
-		final List<ConfigValueListener<?>> list;
-		
-		Subscriber(final List<ConfigValueListener<?>> list)
-		{
-			this.list = list;
-		}
-		
-		/**
-		 * Subscribe a config value to the config reload event. Use with a forge config builder to create the config values.
-		 * @param <T> The type of the value the config value is configuring
-		 * @param value The config value we are subscribing
-		 * @return A reload-sensitive wrapper around your config value. Use listener.get() to get the most up-to-date value.
-		 */
-		public <T> ConfigValueListener<T> subscribe(final ConfigValue<T> value)
-		{
-			return ConfigValueListener.of(value, this.list);
-		}
-		
-		/**
-		 * Subscribe a config value for a complex object type to the config reload event.
-		 * This is an experimental new feature and may not work correctly or at all with all types of objects.
-		 * @param <T> The type of the thing in the config we are making a listener for
-		 * @param builder the forge config builder
-		 * @param name The name of the field in your config that will hold objects of this type
-		 * @param codec A Codec for de/serializing your object type. See drullkus's codec primer for guiding of the creation of these:<br>
-		 * <a href=https://gist.github.com/Drullkus/1bca3f2d7f048b1fe03be97c28f87910>https://gist.github.com/Drullkus/1bca3f2d7f048b1fe03be97c28f87910</a>
-		 * @param defaultObject The default instance of your config field. The given codec must be able to serialize this;
-		 * if it cannot, a RunTimeException will be intentionally thrown the first time the config attempts to load.
-		 * If the codec fails to deserialize the config field at a later time, an error message will be logged and this default instance will be used instead.  
-		 * @return A reload-sensitive wrapper around your config object value. Use listener.get() to get the most up-to-date object.
-		 */
-		public <T> ConfigObjectListener<T> subscribeObject(ForgeConfigSpec.Builder builder,
-			String name,
-			Codec<T> codec,
-			T defaultObject)
-		{
-
-			DataResult<Object> encodeResult = codec.encodeStart(TomlConfigOps.INSTANCE, defaultObject);
-			Object encodedObject = encodeResult.getOrThrow(false, s -> LOGGER.error("Unable to encode default value: {}", s));
-			ConfigValueListener<Object> listener = this.subscribe(builder.define(name, encodedObject));
-			return new ConfigObjectListener<>(listener, codec, defaultObject, encodedObject);
-		}
-	}
-	
-	/** A config-reload-sensitive wrapper around your config value **/
-	public static class ConfigValueListener<T> implements Supplier<T>
-	{
-		private T value = null;
-		private final ConfigValue<T> configValue;
-		
-		private ConfigValueListener(final ConfigValue<T> configValue)
-		{
-			this.configValue = configValue;
-		}
-		
-		protected static <T> ConfigValueListener<T> of(final ConfigValue<T> configValue, final List<ConfigValueListener<?>> valueList)
-		{
-			final ConfigValueListener<T> value = new ConfigValueListener<>(configValue);
-			valueList.add(value);
-			return value;
-		}
-		
-		protected void update()
-		{
-			this.value = this.configValue.get();
-		}
-
-		@Override
-		public T get()
-		{
-			if (this.value == null)
-				this.update();
-			return this.value;
-		}
-	}
-	
-	/** A config-reload-sensitive wrapper around a config field for a complex object **/
-	public static class ConfigObjectListener<T> implements Supplier<T>
-	{
-		private @Nonnull final ConfigValueListener<Object> listener;
+		private @Nonnull final ConfigValue<Object> value;
 		private @Nonnull final Codec<T> codec;
 		private @Nonnull Object cachedObject;
 		private @Nonnull T parsedObject;
 		private @Nonnull T defaultObject;
 		
-		private ConfigObjectListener(ConfigValueListener<Object> listener, Codec<T> codec, T defaultObject, Object encodedDefaultObject)
+		private ConfigObject(ConfigValue<Object> value, Codec<T> codec, T defaultObject, Object encodedDefaultObject)
 		{
-			this.listener = listener;
+			this.value = value;
 			this.codec = codec;
 			this.defaultObject = defaultObject;
 			this.parsedObject = defaultObject;
@@ -229,7 +157,7 @@ public class ConfigHelper
 		@Nonnull
 		public T get()
 		{
-			Object freshObject = this.listener.get();
+			Object freshObject = this.value.get();
 			if (!Objects.equals(this.cachedObject, freshObject))
 			{
 				this.cachedObject = freshObject;
