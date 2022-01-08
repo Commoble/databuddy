@@ -37,7 +37,7 @@ configurations {
 }
 
 dependencies {
-	compile fg.deobf("commoble.databuddy:${databuddy_branch}:${databuddy_version}")
+	implementation fg.deobf("commoble.databuddy:${databuddy_branch}:${databuddy_version}")
 	shade fg.deobf("commoble.databuddy:${databuddy_branch}:${databuddy_version}")
 	// where ${databuddy_branch} is e.g. databuddy-1.17.x
 	// where ${databuddy_version} is e.g. 2.0.0.1
@@ -57,6 +57,14 @@ reobf {
 tasks.build.dependsOn reobfShadowJar
 jar.finalizedBy('reobfShadowJar')
 ```
+
+As of 2.1.0.0, databuddy also builds jars from individual packages, which can be used if the entire project is not needed:
+
+```groovy
+shade fg.deobf("commoble.databuddy:${databuddy_branch}:${databuddy_version}:config")
+```
+
+Valid package artifacts are codec, config, data, datagen, nbt, and plugin.
 
 Alternatively, many of the source classes within are relatively self-contained and can be repackaged into your own sources as-needed; please be considerate and keep the license and copyright notice in any source files you copy into your own projects in this manner.
 

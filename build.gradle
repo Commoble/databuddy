@@ -13,6 +13,7 @@ apply plugin: 'net.minecraftforge.gradle'
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
+apply plugin: 'java'
 
 version = "${mod_version}"
 group = "commoble.${modid}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
@@ -87,10 +88,14 @@ test {
 	useJUnitPlatform()
 }
 
+java
+{
+	withSourcesJar()
+	withJavadocJar()
+}
+
 // Example for how to get properties into the manifest for reading by the runtime..
 jar {
-	//from sourceSets.main.output
-	//from sourceSets.main.allJava
     manifest {
         attributes([
             "Specification-Title": "${modid}",
@@ -106,19 +111,36 @@ jar {
     }
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-	classifier = "javadoc"
-	from javadoc.destinationDir
-}
-
-task sourcesJar(type: Jar) {
-	classifier = "sources"
-	from sourceSets.main.allJava
-}
+["codec", "config", "data", "datagen", "nbt", "plugin"].forEach(x -> {
+	tasks.create(name: "${x}Jar", type: Jar) {
+		classifier = x
+		from sourceSets.main.output
+		include "commoble/databuddy/${x}/**"
+	    manifest {
+	        attributes([
+	            "Specification-Title": "${modid}",
+	            "Specification-Vendor": "Commoble",
+	            "Specification-Version": "1", // We are version 1 of ourselves
+	            "Implementation-Title": project.name,
+	            "Implementation-Version": "${project.version}",
+	            "Implementation-Vendor" :"Commoble",
+	            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+				"Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}",
+				"FMLModType": "GAMELIBRARY"
+	        ])
+    }
+	}
+})
 
 artifacts {
 	archives javadocJar
 	archives sourcesJar
+	archives codecJar
+	archives configJar
+	archives dataJar
+	archives datagenJar
+	archives nbtJar
+	archives pluginJar
 }
 
 jar.finalizedBy('reobfJar') 
@@ -132,6 +154,12 @@ publishing {
             artifact jar
 			artifact sourcesJar
 			artifact javadocJar
+			artifact codecJar
+			artifact configJar
+			artifact dataJar
+			artifact datagenJar
+			artifact nbtJar
+			artifact pluginJar
         }
     }
     repositories {

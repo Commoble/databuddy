@@ -117,7 +117,6 @@ public record ConfigHelper(ForgeConfigSpec.Builder builder)
 	/**
 	 * Define a config value for a complex object.
 	 * @param <T> The type of the thing in the config we are making a listener for
-	 * @param builder the forge config builder
 	 * @param name The name of the field in your config that will hold objects of this type
 	 * @param codec A Codec for de/serializing your object type.
 	 * @param defaultObject The default instance of your config field. The given codec must be able to serialize this;
