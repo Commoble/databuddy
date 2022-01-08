@@ -1,5 +1,8 @@
 package commoble.databuddy.examplecontent;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import commoble.databuddy.config.ConfigHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -11,15 +14,16 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fmllegacy.network.NetworkRegistry;
-import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 @Mod(DataBuddyExampleMod.MODID)
 public class DataBuddyExampleMod
 {
 	public static final String MODID = "databuddy";
+	private static final Logger LOGGER = LogManager.getLogger();
 	
-	public static ExampleServerConfig config;
+	private final ExampleServerConfig config;
 	
 	private static final String CHANNEL_PROTOCOL = "0";
 	
@@ -38,7 +42,7 @@ public class DataBuddyExampleMod
 		IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 		
 		// create and subscribe our config instance
-		DataBuddyExampleMod.config = ConfigHelper.register(
+		this.config = ConfigHelper.register(
 			ModLoadingContext.get(), FMLJavaModLoadingContext.get(),
 			ModConfig.Type.SERVER, ExampleServerConfig::new);
 		
@@ -75,13 +79,13 @@ public class DataBuddyExampleMod
 	void testData(PlayerInteractEvent.RightClickBlock event)
 	{
 		// fires on both client and server threads
-		System.out.println(FlavorTags.DATA_LOADER.data);
+		LOGGER.debug(FlavorTags.DATA_LOADER.data);
 	}
 	
 	void testConfig(BreakEvent event)
 	{
-		System.out.println(config.bones.get());
-		System.out.println(config.bananas.get());
-		System.out.println(config.testObject.get());
+		LOGGER.debug(config.bones.get());
+		LOGGER.debug(config.bananas.get());
+		LOGGER.debug(config.testObject.get());
 	}
 }

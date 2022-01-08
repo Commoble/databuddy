@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
@@ -41,7 +40,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.electronwill.nightconfig.core.Config;
-import com.electronwill.nightconfig.core.Config.Entry;
 import com.electronwill.nightconfig.core.NullObject;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.datafixers.util.Pair;
@@ -49,7 +47,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DataResult.PartialResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.RecordBuilder;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.Builder;
@@ -172,7 +169,7 @@ public class ConfigHelper
 		{
 
 			DataResult<Object> encodeResult = codec.encodeStart(TomlConfigOps.INSTANCE, defaultObject);
-			Object encodedObject = encodeResult.getOrThrow(false, s -> LOGGER.error("Unable to encode default value: ", s));
+			Object encodedObject = encodeResult.getOrThrow(false, s -> LOGGER.error("Unable to encode default value: {}", s));
 			ConfigValueListener<Object> listener = this.subscribe(builder.define(name, encodedObject));
 			return new ConfigObjectListener<>(listener, codec, defaultObject, encodedObject);
 		}
@@ -187,12 +184,11 @@ public class ConfigHelper
 		private ConfigValueListener(final ConfigValue<T> configValue)
 		{
 			this.configValue = configValue;
-			//this.value = configValue.get();
 		}
 		
 		protected static <T> ConfigValueListener<T> of(final ConfigValue<T> configValue, final List<ConfigValueListener<?>> valueList)
 		{
-			final ConfigValueListener<T> value = new ConfigValueListener<T>(configValue);
+			final ConfigValueListener<T> value = new ConfigValueListener<>(configValue);
 			valueList.add(value);
 			return value;
 		}
@@ -249,7 +245,7 @@ public class ConfigHelper
 				result -> result,
 				failure ->
 				{
-					LOGGER.error("Config failure: Using default config value due to parsing error", failure.message());
+					LOGGER.error("Config failure: Using default config value due to parsing error: {}", failure.message());
 					return this.defaultObject;
 				});
 		}
@@ -288,17 +284,17 @@ public class ConfigHelper
 			{
 				return outOps.createString(input.toString());
 			}
-			if (input instanceof String)
+			if (input instanceof String s)
 			{
-				return outOps.createString((String)input);
+				return outOps.createString(s);
 			}
-			if (input instanceof Boolean)
+			if (input instanceof Boolean b)
 			{
-				return outOps.createBoolean((Boolean)input);
+				return outOps.createBoolean(b);
 			}
-			if (input instanceof Number)
+			if (input instanceof Number n)
 			{
-				return outOps.createNumeric((Number)input);
+				return outOps.createNumeric(n);
 			}
 			throw new UnsupportedOperationException("TomlConfigOps was unable to convert toml value: " + input);
 		}
@@ -306,19 +302,19 @@ public class ConfigHelper
 		@Override
 		public DataResult<Number> getNumberValue(Object input)
 		{
-			return input instanceof Number
-				? DataResult.success((Number)input)
+			return input instanceof Number n
+				? DataResult.success(n)
 				: DataResult.error("Not a number: " + input);
 		}
 
 		@Override
 		public DataResult<Boolean> getBooleanValue(Object input)
 		{
-			if (input instanceof Boolean)
-				return DataResult.success((Boolean)input);
-			else if (input instanceof Number) // ensures we don't reset old configs that were serializing 1/0 for bool fields
+			if (input instanceof Boolean b)
+				return DataResult.success(b);
+			else if (input instanceof Number n) // ensures we don't reset old configs that were serializing 1/0 for bool fields
 			{
-				return DataResult.success(((Number)input).intValue() > 0);
+				return DataResult.success(n.intValue() > 0);
 			}
 			else
 				return DataResult.error("Not a boolean: " + input);
@@ -327,7 +323,7 @@ public class ConfigHelper
 		@Override
 		public Object createBoolean(boolean value)
 		{
-			return new Boolean(value);
+			return Boolean.valueOf(value);
 		}
 
 		@Override
@@ -371,7 +367,8 @@ public class ConfigHelper
 			final Collection<Object> result = new ArrayList<>();
 			if (list != this.empty())
 			{
-				Collection<? extends Object> listAsCollection = (Collection<? extends Object>)list;
+				@SuppressWarnings("unchecked")
+				Collection<Object> listAsCollection = (Collection<Object>)list;
 				result.addAll(listAsCollection);
 			}
 			result.add(value);
@@ -428,6 +425,7 @@ public class ConfigHelper
 		{
 			if (input instanceof Collection)
 			{
+				@SuppressWarnings("unchecked")
 				Collection<Object> collection = (Collection<Object>)input;
 				return DataResult.success(collection.stream());
 			}
@@ -437,16 +435,15 @@ public class ConfigHelper
 		@Override
 		public Object createList(Stream<Object> input)
 		{
-			return input.collect(Collectors.toList());
+			return input.toList();
 		}
 
 		@Override
 		public Object remove(Object input, String key)
 		{
-			if (input instanceof Config)
+			if (input instanceof Config oldConfig)
 			{
 				final Config result = TomlFormat.newConfig();
-				final Config oldConfig = (Config)input;
 				oldConfig.entrySet().stream()
 					.filter(entry -> !Objects.equals(entry.getKey(), key))
 					.forEach(entry -> result.add(entry.getKey(), entry.getValue()));

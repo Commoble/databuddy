@@ -5,8 +5,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
@@ -15,11 +15,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 
-public class NullableFieldTests
+class NullableFieldTests
 {
 	public static final Codec<Integer> DEFAULT_FIELD_CODEC = RecordCodecBuilder.create(instance -> instance.group(
 		NullableFieldCodec.makeDefaultableField("value", Codec.INT, 5).forGetter(x -> x)
 	).apply(instance, x->x));
+	public static final Gson GSON = new Gson();
 	
 	@Test
 	void testEmpty()
@@ -41,7 +42,7 @@ public class NullableFieldTests
 	void testWrong()
 	{
 		String wrongJson = "{\"value\": \"wrong\"}";
-		Optional<Pair<Integer, JsonElement>> wrongResult = DEFAULT_FIELD_CODEC.decode(JsonOps.INSTANCE, new JsonParser().parse(wrongJson)).result();
+		Optional<Pair<Integer, JsonElement>> wrongResult = DEFAULT_FIELD_CODEC.decode(JsonOps.INSTANCE, GSON.fromJson(wrongJson, JsonElement.class)).result();
 		Assertions.assertFalse(wrongResult.isPresent());
 	}
 	
@@ -87,7 +88,7 @@ public class NullableFieldTests
 	void testWrongOptional()
 	{
 		String wrongJson = "{\"value\": \"wrong\"}";
-		Optional<Pair<Optional<Integer>, JsonElement>> wrongResult = OPTIONAL_FIELD_CODEC.decode(JsonOps.INSTANCE, new JsonParser().parse(wrongJson)).result();
+		Optional<Pair<Optional<Integer>, JsonElement>> wrongResult = OPTIONAL_FIELD_CODEC.decode(JsonOps.INSTANCE, GSON.fromJson(wrongJson, JsonElement.class)).result();
 		Assertions.assertFalse(wrongResult.isPresent());
 	}
 	
@@ -113,14 +114,12 @@ public class NullableFieldTests
 	void testNullOptionalNPE()
 	{
 		Assertions.assertThrows(NullPointerException.class, () ->
-			OPTIONAL_FIELD_CODEC.encodeStart(NbtOps.INSTANCE, null)
-				.flatMap(nbt -> OPTIONAL_FIELD_CODEC.decode(NbtOps.INSTANCE, nbt))
-				.result().get().getFirst());
+			OPTIONAL_FIELD_CODEC.encodeStart(NbtOps.INSTANCE, null));
 	}
 	
 	private <T> T runCodec(String jsonString, Codec<T> codec)
 	{
-		JsonElement parsed = new JsonParser().parse(jsonString);
+		JsonElement parsed = GSON.fromJson(jsonString, JsonElement.class);
 		T thingAfterRead = codec
 			.decode(JsonOps.INSTANCE, parsed)
 			.result()

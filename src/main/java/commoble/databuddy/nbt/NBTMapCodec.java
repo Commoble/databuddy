@@ -33,7 +33,7 @@ import java.util.stream.IntStream;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.Tag;
 
 /**
  * Helper class for writing a Map into a CompoundTag
@@ -43,7 +43,7 @@ import net.minecraftforge.common.util.Constants;
  * @author Joseph aka Commoble
  * @deprecated prefer using Codecs to read and write NBT where possible
  */
-@Deprecated
+@Deprecated(since="1.1.1.0")
 public class NBTMapCodec<KEY, VALUE>
 {
 	private final String name;
@@ -83,7 +83,7 @@ public class NBTMapCodec<KEY, VALUE>
 	{
 		final Map<KEY, VALUE> newMap = new HashMap<>();
 
-		final ListTag keyList = nbt.getList(this.name, Constants.NBT.TAG_COMPOUND);
+		final ListTag keyList = nbt.getList(this.name, Tag.TAG_COMPOUND);
 		if (keyList == null)
 			return newMap;
 		
@@ -92,7 +92,7 @@ public class NBTMapCodec<KEY, VALUE>
 		if (keyListSize <= 0)
 			return newMap;
 
-		IntStream.range(0, keyListSize).mapToObj(keyIterator -> keyList.getCompound(keyIterator))
+		IntStream.range(0, keyListSize).mapToObj(keyList::getCompound)
 				.forEach(keyNBT -> {
 					final KEY key = this.keyReader.apply(keyNBT);
 					final VALUE value = this.valueReader.apply(keyNBT);

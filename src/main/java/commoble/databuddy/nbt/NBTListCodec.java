@@ -40,7 +40,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.util.Constants;
 
 /**
  * Helper class for converting lists or list-like collections of arbitrary data to NBT and back.
@@ -49,7 +48,7 @@ import net.minecraftforge.common.util.Constants;
  * @param <RAW> either a primitive or an NBT collection type, see ListTagType instances
  * @deprecated Consider using mojang codecs and Codec::listOf
  */
-@Deprecated
+@Deprecated(since="1.1.1.0")
 public class NBTListCodec<ENTRY, RAW>
 {
 	private final String name;
@@ -86,16 +85,16 @@ public class NBTListCodec<ENTRY, RAW>
 	{
 		final List<ENTRY> newList = new ArrayList<>();
 		
-		final ListTag ListTag = compound.getList(this.name, this.type.tagID);
-		if (ListTag == null)
+		final ListTag listTag = compound.getList(this.name, this.type.tagID);
+		if (listTag == null)
 			return newList;
 		
-		final int listSize = ListTag.size();
+		final int listSize = listTag.size();
 		
 		if (listSize <= 0)
 			return newList;
 		
-		IntStream.range(0, listSize).mapToObj(i -> this.type.listReader.apply(ListTag, i))
+		IntStream.range(0, listSize).mapToObj(i -> this.type.listReader.apply(listTag, i))
 			.forEach(nbt -> newList.add(this.elementReader.apply(nbt)));
 		
 		return newList;
@@ -138,17 +137,16 @@ public class NBTListCodec<ENTRY, RAW>
 	
 	public static class ListTagType<RAW>
 	{
-		public static final ListTagType<Byte> BYTE = new ListTagType<>(Constants.NBT.TAG_BYTE, (list, i) -> (byte)(list.getInt(i)), ByteTag::valueOf);
-		public static final ListTagType<Short> SHORT = new ListTagType<>(Constants.NBT.TAG_SHORT, ListTag::getShort, ShortTag::valueOf);
-		public static final ListTagType<Integer> INTEGER = new ListTagType<>(Constants.NBT.TAG_INT, ListTag::getInt, IntTag::valueOf);
-		//public static final NBTType<Long> LONG = new NBTType<>(Constants.NBT.TAG_LONG, lists do not have long getter, LongNBT::valueOf);
-		public static final ListTagType<Float> FLOAT = new ListTagType<>(Constants.NBT.TAG_FLOAT, ListTag::getFloat, FloatTag::valueOf);
-		public static final ListTagType<Double> DOUBLE = new ListTagType<>(Constants.NBT.TAG_DOUBLE, ListTag::getDouble, DoubleTag::valueOf);
-		public static final ListTagType<String> STRING = new ListTagType<>(Constants.NBT.TAG_STRING, ListTag::getString, StringTag::valueOf);
-		public static final ListTagType<ListTag> LIST = new ListTagType<>(Constants.NBT.TAG_LIST, ListTag::getList, x->x);
-		public static final ListTagType<CompoundTag> COMPOUND = new ListTagType<>(Constants.NBT.TAG_COMPOUND, ListTag::getCompound, x->x);
+		public static final ListTagType<Byte> BYTE = new ListTagType<>(Tag.TAG_BYTE, (list, i) -> (byte)(list.getInt(i)), ByteTag::valueOf);
+		public static final ListTagType<Short> SHORT = new ListTagType<>(Tag.TAG_SHORT, ListTag::getShort, ShortTag::valueOf);
+		public static final ListTagType<Integer> INTEGER = new ListTagType<>(Tag.TAG_INT, ListTag::getInt, IntTag::valueOf);
+		public static final ListTagType<Float> FLOAT = new ListTagType<>(Tag.TAG_FLOAT, ListTag::getFloat, FloatTag::valueOf);
+		public static final ListTagType<Double> DOUBLE = new ListTagType<>(Tag.TAG_DOUBLE, ListTag::getDouble, DoubleTag::valueOf);
+		public static final ListTagType<String> STRING = new ListTagType<>(Tag.TAG_STRING, ListTag::getString, StringTag::valueOf);
+		public static final ListTagType<ListTag> LIST = new ListTagType<>(Tag.TAG_LIST, ListTag::getList, x->x);
+		public static final ListTagType<CompoundTag> COMPOUND = new ListTagType<>(Tag.TAG_COMPOUND, ListTag::getCompound, x->x);
 		
-		/** see forge's Constants.NBT, needed for ListTags to work safely **/
+		/** see Tag's constants, needed for ListTags to work safely **/
 		final int tagID;
 		final ListReader<RAW> listReader;
 		final Function<RAW, Tag> serializer;

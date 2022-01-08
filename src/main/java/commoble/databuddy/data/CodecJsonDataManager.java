@@ -29,7 +29,6 @@ package commoble.databuddy.data;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -51,10 +50,9 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fmllegacy.network.PacketDistributor;
-import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
-import net.minecraftforge.fmllegacy.server.ServerLifecycleHooks;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 /**
  * <p>See drullkus's primer on what codecs are and how to assemble them:<br>
@@ -195,7 +193,7 @@ public class CodecJsonDataManager<T> extends SimpleJsonResourceReloadListener
 			this.codec.decode(JsonOps.INSTANCE, element)
 				.get()
 				.ifLeft(result -> newMap.put(key, result.getFirst()))
-				.ifRight(partial -> this.logger.error("Failed to parse data json for {} due to: {}", key.toString(), partial.message()));
+				.ifRight(partial -> this.logger.error("Failed to parse data json for {} due to: {}", key, partial.message()));
 		}
 
 		return newMap;

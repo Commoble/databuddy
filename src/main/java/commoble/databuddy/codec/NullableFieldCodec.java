@@ -95,6 +95,4 @@ public class NullableFieldCodec<VALUE> extends OptionalFieldCodec<VALUE>
         return this.elementCodec.parse(ops, value)
         	.map(Optional::of);
     }
-
-    
 }
