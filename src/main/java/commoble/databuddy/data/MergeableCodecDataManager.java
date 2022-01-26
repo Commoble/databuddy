@@ -78,6 +78,10 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 	protected static final int JSON_EXTENSION_LENGTH = JSON_EXTENSION.length();
 	protected static final Gson STANDARD_GSON = new Gson();
 	
+	/**
+	 * @deprecated prefer using the getter, will be made protected later
+	 */
+	@Deprecated
 	@Nonnull
 	/** Mutable, non-null map containing whatever data was loaded last time server datapacks were loaded **/ 
 	public Map<ResourceLocation, FINE> data = new HashMap<>();
@@ -131,6 +135,14 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 		this.codec = codec;
 		this.merger = merger;
 		this.gson = gson;
+	}
+	
+	/**
+	 * @return The map of data entries
+	 */
+	public Map<ResourceLocation, FINE> getData()
+	{
+		return this.data;
 	}
 
 	/** Off-thread processing (can include reading files from hard drive) **/

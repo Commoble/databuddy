@@ -26,6 +26,7 @@ SOFTWARE.
 
 package commoble.databuddy.data;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -110,11 +111,21 @@ public class CodecJsonDataManager<T> extends SimpleJsonResourceReloadListener
 	 * Get the data object for the given key
 	 * @param id A resourcelocation identifying a json; e.g. a json at data/some_modid/folderName/some_json.json has id "some_modid:some_json"
 	 * @return The java object that was deserializd from the json with the given ID, or null if no such object is associated with that ID
+	 * @deprecated Prefer using the other getData to get the data entries
 	 */
+	@Deprecated(forRemoval=true)
 	@Nullable
 	public T getData(ResourceLocation id)
 	{
 		return this.data.get(id);
+	}
+	
+	/**
+	 * @return The data entries
+	 */
+	public Map<ResourceLocation, T> getData()
+	{
+		return this.data;
 	}
 
 	@Override
