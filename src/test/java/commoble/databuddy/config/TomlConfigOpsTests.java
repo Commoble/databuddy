@@ -1,4 +1,4 @@
-package commoble.databuddy.codec;
+package commoble.databuddy.config;
 
 import java.util.ArrayList;
 import java.util.List;
