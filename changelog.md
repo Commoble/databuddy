@@ -1,3 +1,13 @@
+# 2.1.0.1
+* Added WriteFieldFirstOps delegating ops to codec package
+* Added public getters for the data maps in CodecJsonDataManager and MergeableCodecDataManager
+* Deprecated the public value-for-key getter in CodecJsonDataManager and the public map field in MergeableCodecDataManager
+
+# 2.1.0.0
+* Updated to MC 1.18
+* Refactored ConfigHelper, removed ConfigValueListeners due to forge automatically updating configs now
+* Refactored data managers to use OnDatapackSyncEvent
+
 # 2.0.0.1
 * Add JsonDataProvider class, a data provider for generating jsons from codecs
 
