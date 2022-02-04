@@ -1,3 +1,6 @@
+# 2.1.0.2
+* Make ConfigHelper more static, deprecate non-static methods for removal in MC 1.19
+
 # 2.1.0.1
 * Added WriteFieldFirstOps delegating ops to codec package
 * Added public getters for the data maps in CodecJsonDataManager and MergeableCodecDataManager
