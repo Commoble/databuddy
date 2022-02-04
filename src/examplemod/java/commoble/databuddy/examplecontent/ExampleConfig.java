@@ -18,7 +18,7 @@ public record ExampleConfig(
 	ConfigValue<Double> bananas,
 	ConfigObject<TestObject> testObject)
 {
-	public static ExampleConfig create(ForgeConfigSpec.Builder builder, ConfigHelper helper)
+	public static ExampleConfig create(ForgeConfigSpec.Builder builder)
 	{
 		builder.push("General Category");
 		
@@ -34,7 +34,7 @@ public record ExampleConfig(
 		
 		// comments and such for ConfigObjects can be defined before defining the object
 		builder.comment("Example object");
-		ConfigObject<TestObject> testObject = helper.defineObject("testObject", TestObject.CODEC,
+		ConfigObject<TestObject> testObject = ConfigHelper.defineObject(builder, "testObject", TestObject.CODEC,
 			new TestObject(new BlockPos(3,9,-41),
 				Lists.newArrayList(
 					new ResourceLocation("minecraft:dirt"),
