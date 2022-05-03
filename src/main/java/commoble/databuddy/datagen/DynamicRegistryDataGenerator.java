@@ -70,11 +70,10 @@ public record DynamicRegistryDataGenerator(DataGenerator generator, RegistryOps<
 	 * Helper for creating the DynamicRegistryDataGenerator in the preferred manner.
 	 * @param generator The DataGenerator provided from the {@link GatherDataEvent}
 	 * @return A DynamicRegistryDataGenerator with a registryops baked into it.
-	 * This is expensive, prefer making only one per datagen session.
 	 */
 	public static DynamicRegistryDataGenerator create(final DataGenerator generator)
 	{
-		return new DynamicRegistryDataGenerator(generator, RegistryOps.create(JsonOps.INSTANCE, RegistryAccess.builtinCopy()));
+		return new DynamicRegistryDataGenerator(generator, RegistryOps.create(JsonOps.INSTANCE, RegistryAccess.BUILTIN.get()));
 	}
 	
 	/**

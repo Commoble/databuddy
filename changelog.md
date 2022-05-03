@@ -1,3 +1,11 @@
+# 2.2.0.1
+* Change DynamicRegistryDataGenerator to use memoized frozen registries
+
+# 2.2.0.0
+* Add DynamicRegistryDataGenerator
+* Add RegistryDispatcher
+* Update to 1.18.2
+
 # 2.1.0.2
 * Make ConfigHelper more static, deprecate non-static methods for removal in MC 1.19
 
