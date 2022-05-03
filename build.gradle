@@ -24,6 +24,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 sourceSets {
 	main
 	examplemod
+	generated
 	test
 }
 
@@ -63,7 +64,7 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'debug'
 
-            args '--mod', 'modid', '--all', '--output', file('src/generated/resources/')
+            args '--mod', 'databuddy', '--all', '--output', file('src/generated/resources/')
 
             mods {
                 databuddy {
