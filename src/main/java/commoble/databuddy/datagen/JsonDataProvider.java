@@ -77,7 +77,7 @@ public record JsonDataProvider<T>(Gson gson, DataGenerator generator, PackType r
         this.objects.forEach((id, object) -> {
             Path jsonLocation = resourcesFolder.resolve(String.join("/", this.resourceType.getDirectory(), id.getNamespace(), this.folder, id.getPath() + ".json"));
             this.codec.encodeStart(JsonOps.INSTANCE, object)
-                .resultOrPartial(s -> LOGGER.error("{} {} provider failed to encode {}", this.folder, this.resourceType.getDirectory(), jsonLocation, s))
+                .resultOrPartial(s -> LOGGER.error("{} {} provider failed to encode {}: {}", this.folder, this.resourceType.getDirectory(), jsonLocation, s))
                 .ifPresent(jsonElement -> {
                     try
                     {
