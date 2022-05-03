@@ -48,8 +48,8 @@ import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.registries.DeferredRegister;
 
 /**
- * Helper for datagenerating jsons to be loaded into the dynamic/datapack registries (e.g. biomes and configured features).</br>
- * How to use it:</br>
+ * Helper for datagenerating jsons to be loaded into the dynamic/datapack registries (e.g. biomes and configured features).<br>
+ * How to use it:<br>
  * <ol>
  * <li>Use {@link DeferredRegister}s to register objects to {@link BuiltinRegistries}.
  * These can be registered during datagen, objects to be read from json do not need to be registered
@@ -60,6 +60,7 @@ import net.minecraftforge.registries.DeferredRegister;
  * <li>Create a DynamicRegistryDataGenerator</li>
  * <li>For each type (registry) of object to be datagenerated, use makeDataProvider to create a datagenerator
  * and add it to the {@link GatherDataEvent}'s datagenerator</li>
+ * </ol>
  */
 public record DynamicRegistryDataGenerator(DataGenerator generator, RegistryOps<JsonElement> ops)
 {
