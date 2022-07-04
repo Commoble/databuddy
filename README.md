@@ -13,16 +13,9 @@ A library for assisting with the handling of many kinds of data in Minecraft For
 You may bundle the jar into your projects in your favorite manner. One way of using this is to use the shadow gradle plugin in your buildscript, which helps avoid collisions with other mods that may be using the same library:
 
 ```groovy
-buildscript {
-	repositories {
-		jcenter() // buildscript repo to get shadow from
-	}
-}
-
 plugins {
-	// this version works on gradle 4.9
-	// more recent versions of shadow work on more recent versions of gradle
-	id 'com.github.johnrengelman.shadow' version '4.0.4'
+    // this version works on gradle 7.x
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java' // java plugin is needed for the shadow plugin to work
@@ -39,8 +32,8 @@ configurations {
 dependencies {
 	implementation fg.deobf("commoble.databuddy:${databuddy_branch}:${databuddy_version}")
 	shade fg.deobf("commoble.databuddy:${databuddy_branch}:${databuddy_version}")
-	// where ${databuddy_branch} is e.g. databuddy-1.17.x
-	// where ${databuddy_version} is e.g. 2.0.0.1
+	// where ${databuddy_branch} is e.g. databuddy-1.19.x
+	// where ${databuddy_version} is e.g. 3.0.0.0
 }
 
 shadowJar {
