@@ -79,6 +79,10 @@ public class NullableFieldCodec<VALUE> extends OptionalFieldCodec<VALUE>
 	private final String name;
 	private final Codec<VALUE> elementCodec;
 	
+	/**
+	 * @param name String name of the field
+	 * @param elementCodec Codec to de/serialize the field's value
+	 */
 	protected NullableFieldCodec(String name, Codec<VALUE> elementCodec)
 	{
 		super(name, elementCodec);

@@ -54,7 +54,7 @@ import net.minecraft.resources.DelegatingOps;
 /**
  * <p>Delegating DynamicOps that, when serializing data, serializes specified fields in a given order
  * before serializing any other fields.
- * This may be helpful when writing human-readable data, such as json files.<p>
+ * This may be helpful when writing human-readable data, such as json files.</p>
  * <p>As of 1.19, {@link DataProvider#saveStable} now automatically places
  * "type" and "parent" fields at the top of jsons, making this class no longer
  * necessary for the use case of datagenerating jsons with those fields.</p>
@@ -87,6 +87,10 @@ public class WriteFieldsFirstOps<T> extends DelegatingOps<T>
 		return new WriteFieldsFirstOps<>(delegate, priorityFields);
 	}
 	
+	/**
+	 * @param delegate DynamicOps to delegate to
+	 * @param priorityFields String names of the fields to keep at the top of the serialized object
+	 */
 	protected WriteFieldsFirstOps(final DynamicOps<T> delegate, final String... priorityFields)
 	{
 		super(delegate);

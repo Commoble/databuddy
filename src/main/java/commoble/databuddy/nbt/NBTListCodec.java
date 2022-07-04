@@ -46,9 +46,7 @@ import net.minecraft.nbt.Tag;
  * 
  * @param <ENTRY> the data type in the actual java list, i.e. {@literal List<ENTRY>}
  * @param <RAW> either a primitive or an NBT collection type, see ListTagType instances
- * @deprecated Consider using mojang codecs and Codec::listOf
  */
-@Deprecated(since="1.1.1.0")
 public class NBTListCodec<ENTRY, RAW>
 {
 	private final String name;
@@ -135,23 +133,39 @@ public class NBTListCodec<ENTRY, RAW>
 		public T apply(ListTag list, int index);
 	}
 	
-	public static class ListTagType<RAW>
+	/**
+	 * @param <T> tag type
+	 */
+	public static class ListTagType<T>
 	{
+		/** byte tag type **/
 		public static final ListTagType<Byte> BYTE = new ListTagType<>(Tag.TAG_BYTE, (list, i) -> (byte)(list.getInt(i)), ByteTag::valueOf);
+		/** short tag type **/
 		public static final ListTagType<Short> SHORT = new ListTagType<>(Tag.TAG_SHORT, ListTag::getShort, ShortTag::valueOf);
+		/** int tag type **/
 		public static final ListTagType<Integer> INTEGER = new ListTagType<>(Tag.TAG_INT, ListTag::getInt, IntTag::valueOf);
+		/** float tag type **/
 		public static final ListTagType<Float> FLOAT = new ListTagType<>(Tag.TAG_FLOAT, ListTag::getFloat, FloatTag::valueOf);
+		/** double tag type **/
 		public static final ListTagType<Double> DOUBLE = new ListTagType<>(Tag.TAG_DOUBLE, ListTag::getDouble, DoubleTag::valueOf);
+		/** string tag type **/
 		public static final ListTagType<String> STRING = new ListTagType<>(Tag.TAG_STRING, ListTag::getString, StringTag::valueOf);
+		/** list tag type **/
 		public static final ListTagType<ListTag> LIST = new ListTagType<>(Tag.TAG_LIST, ListTag::getList, x->x);
+		/** map tag type **/
 		public static final ListTagType<CompoundTag> COMPOUND = new ListTagType<>(Tag.TAG_COMPOUND, ListTag::getCompound, x->x);
 		
 		/** see Tag's constants, needed for ListTags to work safely **/
 		final int tagID;
-		final ListReader<RAW> listReader;
-		final Function<RAW, Tag> serializer;
+		final ListReader<T> listReader;
+		final Function<T, Tag> serializer;
 		
-		public ListTagType(int tagID, ListReader<RAW> listReader, Function<RAW, Tag> serializer)
+		/**
+		 * @param tagID int id of the nbt type
+		 * @param listReader ListReader for indexing the list
+		 * @param serializer Function to serialize a T to an nbt Tag
+		 */
+		public ListTagType(int tagID, ListReader<T> listReader, Function<T, Tag> serializer)
 		{
 			this.tagID = tagID;
 			this.listReader = listReader;

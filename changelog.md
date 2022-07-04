@@ -1,9 +1,12 @@
 # 3.0.0.0
 * Add SimpleModel and BlockStateFile to datagen package (alternative dataproviders for blockstate/model datagen)
 * Remove JsonDataProvider and DynamicRegistryDataGenerator (superceded by forge's JsonCodecProvider)
+* Remove non-static methods from ConfigHelper, it now only contains static utility methods
 * Refactored RegistryDispatcher based on forge's registry rewrite. Now directly creates registries of Codecs and does not require IForgeRegistryEntries (which no longer exist)
 * MergeableCodecDataManager now provides a getter to its data map, which is now immutable
 * CodecDataManager and MergeableCodecDataManager no longer accept loggers on construction
+* Un-deprecate NBTListCodec and NBTMapCodec as they have use-cases for reading entity/blockentity data during
+server runtime, where mojang codecs may be too slow to be practical
 
 # 2.2.0.1
 * Change DynamicRegistryDataGenerator to use memoized frozen registries

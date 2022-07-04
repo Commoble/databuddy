@@ -44,6 +44,9 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.forgespi.language.ModFileScanData.AnnotationData;
 
+/**
+ * Helper for providing annotation apis to other mods and load and construct their classes
+ */
 public class PluginLoader
 {
 	/**

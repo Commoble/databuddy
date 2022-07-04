@@ -41,9 +41,7 @@ import net.minecraft.nbt.Tag;
  * @param <KEY> the type of the Map's keys
  * @param <VALUE> the type of the Map's values
  * @author Joseph aka Commoble
- * @deprecated prefer using Codecs to read and write NBT where possible
  */
-@Deprecated(since="1.1.1.0")
 public class NBTMapCodec<KEY, VALUE>
 {
 	private final String name;

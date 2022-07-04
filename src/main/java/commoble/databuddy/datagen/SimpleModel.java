@@ -40,10 +40,11 @@ import net.minecraftforge.common.data.JsonCodecProvider;
 import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 
 /**
- * Represents a parented model file. The codec can be used for datagen via {@link JsonDataProvider}.
+ * Represents a parented model file. The codec can be used for datagen via {@link #addDataProvider(GatherDataEvent, String, DynamicOps, Map)}.
  */
 public record SimpleModel(ResourceLocation parent, Map<String, ResourceLocation> textures)
 {
+	/** codec **/
 	public static final Codec<SimpleModel> CODEC = RecordCodecBuilder.create(builder -> builder.group(
 			ResourceLocation.CODEC.fieldOf("parent").forGetter(SimpleModel::parent),
 			Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC).optionalFieldOf("textures", Map.of()).forGetter(SimpleModel::textures)
@@ -54,7 +55,6 @@ public record SimpleModel(ResourceLocation parent, Map<String, ResourceLocation>
 	 * @param event GatherDataEvent containing datagen context
 	 * @param modid String modid for logging purposes
 	 * @param dynamicOps DynamicOps to serialize the data to json with, e.g. JsonOps.INSTANCE
-	 * @param directory String directory to serialize to, e.g. "models/block" or "models/item"
 	 * @param entries Map of ResourceLocation ids to SimpleModels to serialize
 	 */
 	public static void addDataProvider(GatherDataEvent event, String modid, DynamicOps<JsonElement> dynamicOps, Map<ResourceLocation,SimpleModel> entries)

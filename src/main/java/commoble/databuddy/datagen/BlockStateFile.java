@@ -57,6 +57,7 @@ import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
  */
 public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> multipart)
 {
+	/** codec **/
 	public static final Codec<BlockStateFile> CODEC = RecordCodecBuilder.create(builder -> builder.group(
 			Variants.CODEC.optionalFieldOf("variants").forGetter(BlockStateFile::variants),
 			Multipart.CODEC.optionalFieldOf("multipart").forGetter(BlockStateFile::multipart)
@@ -106,11 +107,18 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 		return new BlockStateFile(Optional.of(variants), Optional.of(multipart));
 	}
 
-	public static record Variants(Map<List<PropertyValue<?>>, Either<Model, List<Model>>> variants)
+	/**
+	 * Represents a "variants" block in a blockstate json.
+	 * @param variants Map of blockstate property predicates to models
+	 */
+	public static record Variants(Map<List<PropertyValue<?>>, List<Model>> variants)
 	{
+		/** codec **/
 		public static final Codec<Variants> CODEC = Codec.unboundedMap(
 				PropertyValue.LIST_CODEC,
-				Codec.either(Model.CODEC, Model.CODEC.listOf()))
+				new ExtraCodecs.EitherCodec<>(Model.CODEC, Model.CODEC.listOf()).xmap(
+					either -> either.map(List::of, Function.identity()),
+					list -> list.size() == 1 ? Either.left(list.get(0)) : Either.right(list)))
 			.xmap(Variants::new, Variants::variants);
 		
 		/**
@@ -138,7 +146,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 
 		/**
 		 * Adds a variant for your blockstate json
-		 * @param values e.g. "facing=east"
+		 * @param value e.g. "facing=east"
 		 * @param models Model definition, e.g. { "model": "minecraft:block/acacia_stairs_inner" }. Providing more than one
 		 * indicates a list of random models (e.g. stone's models).
 		 * @return this
@@ -158,7 +166,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 		 */
 		public Variants addVariant(List<PropertyValue<?>> values, Model... models)
 		{
-			this.variants.put(values, models.length == 1 ? Either.left(models[0]) : Either.right(Arrays.asList(models)));
+			this.variants.put(values, Arrays.asList(models));
 			return this;
 		}
 	}
@@ -171,13 +179,23 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 	 */
 	public static record PropertyValue<T extends Comparable<T>>(Property<T> property, T value)
 	{
+		/** codec **/
 		public static final Codec<PropertyValue<?>> CODEC = Codec.STRING.comapFlatMap(
 			s -> DataResult.error("PropertyValue not deserializable"),
 			PropertyValue::toString);
+		
+		/** list codec **/
 		public static final Codec<List<PropertyValue<?>>> LIST_CODEC = Codec.STRING.comapFlatMap(
 			s -> DataResult.error("PropertyValue List not deserializable"),
 			values -> String.join(",", values.stream().map(PropertyValue::toString).toArray(String[]::new)));
 		
+		/**
+		 * Creates a property value from a property and a value
+		 * @param <T> value type
+		 * @param property Property of a blockstate
+		 * @param value Value of a blockstate property
+		 * @return PropertyValue with that property and value
+		 */
 		public static <T extends Comparable<T>> PropertyValue<T> create(Property<T> property, T value)
 		{
 			return new PropertyValue<>(property, value);
@@ -199,6 +217,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 	 */
 	public static record Multipart(List<WhenApply> cases)
 	{
+		/** codec **/
 		public static final Codec<Multipart> CODEC = WhenApply.CODEC.listOf().xmap(Multipart::new, Multipart::cases);
 
 		/**
@@ -214,9 +233,14 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 			return new Multipart(new ArrayList<>());
 		}
 		
-		public Multipart addWhenApply(WhenApply modelSet)
+		/**
+		 * Adds a when-apply case to this multipart definition
+		 * @param whenApply WhenApply to add
+		 * @return this
+		 */
+		public Multipart addWhenApply(WhenApply whenApply)
 		{
-			this.cases.add(modelSet);
+			this.cases.add(whenApply);
 			return this;
 		}
 	}
@@ -235,6 +259,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 	 */
 	public static record WhenApply(Optional<Either<OrCase, Case>> when, List<Model> apply)
 	{
+		/** codec **/
 		public static final Codec<WhenApply> CODEC = RecordCodecBuilder.create(builder -> builder.group(
 				Codec.either(OrCase.CODEC, Case.CODEC).optionalFieldOf("when").forGetter(WhenApply::when),
 				Codec.either(Model.CODEC.listOf(), Model.CODEC).xmap(
@@ -290,6 +315,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 	 */
 	public static record Case(Map<String,String> conditions)
 	{
+		/** codec **/
 		public static final Codec<Case> CODEC = Codec.unboundedMap(Codec.STRING, Codec.STRING)
 			.xmap(Case::new, Case::conditions);
 		
@@ -351,6 +377,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 	 */
 	public static record OrCase(List<Either<OrCase, Case>> cases)
 	{
+		/** codec **/
 		public static final Codec<OrCase> CODEC =
 			Codec.either(ExtraCodecs.lazyInitializedCodec(() -> OrCase.CODEC), Case.CODEC)
 				.listOf().fieldOf("OR").codec()
@@ -378,7 +405,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 		
 		/**
 		 * Adds an OrCase to this OrCase's list of cases (only usable if list is mutable)
-		 * @param orCase
+		 * @param orCase OrCase to add
 		 * @return this
 		 */
 		public OrCase addOrCase(OrCase orCase)
@@ -399,6 +426,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 	 */
 	public static record Model(ResourceLocation model, int x, int y, boolean uvLock, int weight)
 	{
+		/** codec **/
 		public static final Codec<Model> CODEC = RecordCodecBuilder.<Model>create(instance -> instance.group(
 				ResourceLocation.CODEC.fieldOf("model").forGetter(Model::model),
 				Codec.INT.optionalFieldOf("x",0).forGetter(Model::x),
@@ -407,6 +435,15 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 				Codec.INT.optionalFieldOf("weight",1).forGetter(Model::weight)
 			).apply(instance, Model::new));
 		
+		/**
+		 * Component representing a rotated model object in variant and multipart definitions.
+		 * 
+		 * @param model Model id, e.g. minecraft:block/dirt
+		 * @param x Model x-rotation. Must be 0, 90, 180, or 270.
+		 * @param y Model y-rotation. Must be 0, 90, 180, or 270.
+		 * @param uvLock Whether to lock UVs when rotating model.
+		 * @param weight Weight of model part when used in a list of model parts. Must be positive.
+		 */
 		public Model
 		{
 			if (BlockModelRotation.by(x, y) == null)
@@ -415,21 +452,43 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 				throw new IllegalArgumentException(String.format("Invalid blockstate model part weight %s: weight must be positive", weight));
 		}
 		
+		/**
+		 * {@return new Model with no rotation, no uvlock, and weight 1}
+		 * @param model ResourceLocation of a model, e.g. "minecraft:block/dirt"
+		 */
 		public static Model create(ResourceLocation model)
 		{
 			return create(model, BlockModelRotation.X0_Y0);
 		}
 		
+		/**
+		 * {@return new Model with no uvlock and weight 1}
+		 * @param model ResourceLocation of a model, e.g. "minecraft:block/dirt"
+		 * @param rotation x-y rotation to apply to the model
+		 */
 		public static Model create(ResourceLocation model, BlockModelRotation rotation)
 		{
 			return create(model, rotation, false);
 		}
 		
+		/**
+		 * {@return Model with weight 1}
+		 * @param model ResourceLocation of a model, e.g. "minecraft:block/dirt"
+		 * @param rotation x-y rotation to apply to the model
+		 * @param uvLock whether to lock UVs
+		 */
 		public static Model create(ResourceLocation model, BlockModelRotation rotation, boolean uvLock)
 		{
 			return create(model, rotation, uvLock, 1);
 		}
 		
+		/**
+		 * {@return new Model}
+		 * @param model ResourceLocation of a model, e.g. "minecraft:block/dirt"
+		 * @param rotation x-y rotation to apply to the model
+		 * @param uvLock whether to lock UVs
+		 * @param weight weighting of positional-random Models, only used when multiple models are used in a variant/case
+		 */
 		public static Model create(ResourceLocation model, BlockModelRotation rotation, boolean uvLock, int weight)
 		{
 			int ordinal = rotation.ordinal();

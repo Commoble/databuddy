@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -55,69 +54,13 @@ import net.minecraftforge.fml.config.ModConfig;
 
 
 /**
- * Helper for creating configs and defining complex objects in configs 
+ * Helpers for creating configs and defining complex objects in configs 
  */
-public record ConfigHelper(ForgeConfigSpec.Builder builder)
+public class ConfigHelper
 {
+	private ConfigHelper() {} // utility class
+	
 	static final Logger LOGGER = LogManager.getLogger();
-	
-	/**
-	 * Register a config using a default config filename for your mod.
-	 * @param <T> The class of your config implementation
-	 * @param configType Forge config type:
-	 * <ul>
-	 * <li>SERVER configs are defined by the server and synced to clients; individual configs are generated per-save. Filename will be modid-server.toml
-	 * <li>COMMON configs are definable by both server and clients and not synced (they may have different values). Filename will be modid-client.toml
-	 * <li>CLIENT configs are defined by clients and not used on the server. Filename will be modid-client.toml.
-	 * </ul>
-	 * @param configFactory A constructor or factory for your config class
-	 * @return An instance of your config class
-	 * @deprecated use the register method that takes a Function
-	 */
-	@Deprecated(forRemoval=true)
-	public static <T> T register(
-		final ModConfig.Type configType,
-		final BiFunction<ForgeConfigSpec.Builder, ConfigHelper, T> configFactory)
-	{
-		return register(configType, configFactory, null);
-	}
-	
-	/**
-	 * Register a config using a custom filename.
-	 * @param <T> Your config class
-	 * @param configType Forge config type:
-	 * <ul>
-	 * <li>SERVER configs are defined by the server and synced to clients; individual configs are generated per-save.
-	 * <li>COMMON configs are definable by both server and clients and not synced (they may have different values)
-	 * <li>CLIENT configs are defined by clients and not used on the server
-	 * </ul>
-	 * @param configFactory A constructor or factory for your config class
-	 * @param configName Name of your config file. Supports subfolders, e.g. "yourmod/yourconfig".
-	 * @return An instance of your config class
-	 * @deprecated use the register method that takes a Function
-	 */
-	@Deprecated(forRemoval=true)
-	public static <T> T register(
-		final ModConfig.Type configType,
-		final BiFunction<ForgeConfigSpec.Builder, ConfigHelper, T> configFactory,
-		final @Nullable String configName)
-	{
-		final ModLoadingContext modContext = ModLoadingContext.get();
-		final org.apache.commons.lang3.tuple.Pair<T, ForgeConfigSpec> entry = new ForgeConfigSpec.Builder()
-			.configure(thisBuilder -> configFactory.apply(thisBuilder, new ConfigHelper(thisBuilder)));
-		final T config = entry.getLeft();
-		final ForgeConfigSpec spec = entry.getRight();
-		if (configName == null)
-		{
-			modContext.registerConfig(configType,spec);
-		}
-		else
-		{
-			modContext.registerConfig(configType, spec, configName + ".toml");
-		}
-		
-		return config;
-	}
 	
 	/**
 	 * Register a config using a default config filename for your mod.
@@ -176,23 +119,7 @@ public record ConfigHelper(ForgeConfigSpec.Builder builder)
 	/**
 	 * Define a config value for a complex object.
 	 * @param <T> The type of the thing in the config we are making a listener for
-	 * @param name The name of the field in your config that will hold objects of this type
-	 * @param codec A Codec for de/serializing your object type.
-	 * @param defaultObject The default instance of your config field. The given codec must be able to serialize this;
-	 * if it cannot, an exception will be intentionally thrown the first time the config attempts to load.
-	 * If the codec fails to deserialize the config field at a later time, an error message will be logged and this default instance will be used instead.  
-	 * @return A reload-sensitive wrapper around your config object value. Use ConfigObject#get to get the most up-to-date object.
-	 * @deprecated Use defineObject(Builder, String, Codec, T)
-	 */
-	@Deprecated(forRemoval=true)
-	public <T> ConfigObject<T> defineObject(String name, Codec<T> codec, T defaultObject)
-	{
-		return defineObject(name, codec, defaultObject);
-	}
-	
-	/**
-	 * Define a config value for a complex object.
-	 * @param <T> The type of the thing in the config we are making a listener for
+	 * @param builder Builder to build configs with
 	 * @param name The name of the field in your config that will hold objects of this type
 	 * @param codec A Codec for de/serializing your object type.
 	 * @param defaultObject The default instance of your config field. The given codec must be able to serialize this;
@@ -254,8 +181,13 @@ public record ConfigHelper(ForgeConfigSpec.Builder builder)
 		}
 	}
 	
+	/**
+	 * DynamicOps for using {@link Codec}s to load objects from configs.
+	 * Particularly helpful for loading maps or maplike objects.
+	 */
 	public static class TomlConfigOps implements DynamicOps<Object>
 	{
+		/** instance **/
 		public static final TomlConfigOps INSTANCE = new TomlConfigOps();
 
 		@Override

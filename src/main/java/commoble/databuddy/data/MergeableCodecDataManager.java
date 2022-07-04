@@ -68,9 +68,12 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 {
 	private static final Logger LOGGER = LogManager.getLogger();
 	
+	/** ".json" **/
 	protected static final String JSON_EXTENSION = ".json";
+	/** 5 **/
 	protected static final int JSON_EXTENSION_LENGTH = JSON_EXTENSION.length();
 	
+	/** the loaded data **/
 	protected Map<ResourceLocation, FINE> data = new HashMap<>();
 	
 	private final String folderName;
