@@ -2,7 +2,6 @@
 buildscript {
     repositories {
         maven { url = 'https://maven.minecraftforge.net' }
-        jcenter()
         mavenCentral()
     }
     dependencies {
@@ -27,6 +26,9 @@ sourceSets {
 	generated
 	test
 }
+
+// include resources generated from datagen in examplemod
+sourceSets.examplemod.resources { srcDir 'src/generated/resources' }
 
 minecraft {
     mappings channel: 'official', version: "${mc_version}"    
@@ -170,3 +172,8 @@ publishing {
         }
     }
 }
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+

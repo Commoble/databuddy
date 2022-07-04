@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "minecraft:block/sponge"
+      },
+      {
+        "model": "minecraft:block/sponge",
+        "y": 90
+      },
+      {
+        "model": "minecraft:block/sponge",
+        "y": 180
+      },
+      {
+        "model": "minecraft:block/sponge",
+        "y": 270
+      }
+    ]
+  }
+}

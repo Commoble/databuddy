@@ -26,28 +26,21 @@ SOFTWARE.
 
 package commoble.databuddy.data;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javax.annotation.Nonnull;
-
-import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+import com.ibm.icu.impl.locale.XCldrStub.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 
@@ -56,7 +49,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.OnDatapackSyncEvent;
@@ -74,30 +66,22 @@ import net.minecraftforge.network.simple.SimpleChannel;
  */
 public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReloadListener<Map<ResourceLocation, FINE>>
 {
+	private static final Logger LOGGER = LogManager.getLogger();
+	
 	protected static final String JSON_EXTENSION = ".json";
 	protected static final int JSON_EXTENSION_LENGTH = JSON_EXTENSION.length();
-	protected static final Gson STANDARD_GSON = new Gson();
 	
-	/**
-	 * @deprecated prefer using the getter, will be made protected later
-	 */
-	@Deprecated
-	@Nonnull
-	/** Mutable, non-null map containing whatever data was loaded last time server datapacks were loaded **/ 
-	public Map<ResourceLocation, FINE> data = new HashMap<>();
+	protected Map<ResourceLocation, FINE> data = new HashMap<>();
 	
 	private final String folderName;
-	private final Logger logger;
 	private final Codec<RAW> codec;
 	private final Function<List<RAW>, FINE> merger;
-	private final Gson gson;
 	
 	/**
 	 * Initialize a data manager with the given folder name, codec, and merger
 	 * @param folderName The name of the folder to load data from,
 	 * e.g. "cheeses" would load data from "data/modid/cheeses" for all modids.
 	 * Can include subfolders, e.g. "cheeses/sharp"
-	 * @param logger A logger that will log parsing errors if they occur
 	 * @param codec A codec that will be used to parse jsons. See drullkus's codec primer for help on creating these:
 	 * https://gist.github.com/Drullkus/1bca3f2d7f048b1fe03be97c28f87910
 	 * @param merger A merging function that uses a list of java-objects-that-were-parsed-from-json to create a final object.
@@ -106,39 +90,15 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 	 * As an example, consider vanilla's Tags: mods or datapacks can define tags with the same modid:name id,
 	 * and then all tag jsons defined with the same ID are merged additively into a single set of items, etc
 	 */
-	public MergeableCodecDataManager(final String folderName, final Logger logger, Codec<RAW> codec, final Function<List<RAW>, FINE> merger)
-	{
-		this(folderName, logger, codec, merger, STANDARD_GSON);
-	}
-
-	
-	/**
-	 * Initialize a data manager with the given folder name, codec, and merger, as well as a user-defined GSON instance.
-	 * @param folderName The name of the folder to load data from,
-	 * e.g. "cheeses" would load data from "data/modid/cheeses" for all modids.
-	 * Can include subfolders, e.g. "cheeses/sharp"
-	 * @param logger A logger that will log parsing errors if they occur
-	 * @param codec A codec that will be used to parse jsons. See drullkus's codec primer for help on creating these:
-	 * https://gist.github.com/Drullkus/1bca3f2d7f048b1fe03be97c28f87910
-	 * @param merger A merging function that uses a list of java-objects-that-were-parsed-from-json to create a final object.
-	 * The list contains all successfully-parsed objects with the same ID from all mods and datapacks.
-	 * (for a json located at "data/modid/folderName/name.json", the object's ID is "modid:name")
-	 * As an example, consider vanilla's Tags: mods or datapacks can define tags with the same modid:name id,
-	 * and then all tag jsons defined with the same ID are merged additively into a single set of items, etc
-	 * @param gson A GSON instance, allowing for user-defined deserializers. General not needed as the gson is only used to convert
-	 * raw json to a JsonElement, which the Codec then parses into a proper java object.
-	 */
-	public MergeableCodecDataManager(final String folderName, final Logger logger, Codec<RAW> codec, final Function<List<RAW>, FINE> merger, final Gson gson)
+	public MergeableCodecDataManager(final String folderName, Codec<RAW> codec, final Function<List<RAW>, FINE> merger)
 	{
 		this.folderName = folderName;
-		this.logger = logger;
 		this.codec = codec;
 		this.merger = merger;
-		this.gson = gson;
 	}
 	
 	/**
-	 * @return The map of data entries
+	 * @return The immutable map of data entries
 	 */
 	public Map<ResourceLocation, FINE> getData()
 	{
@@ -149,92 +109,50 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 	@Override
 	protected Map<ResourceLocation, FINE> prepare(final ResourceManager resourceManager, final ProfilerFiller profiler)
 	{
-		final Map<ResourceLocation, List<RAW>> map = Maps.newHashMap();
+		LOGGER.info("Beginning loading of data for data loader: {}", this.folderName);
+		final Map<ResourceLocation, FINE> map = new HashMap<>();
 
-		for (ResourceLocation resourceLocation : resourceManager.listResources(this.folderName, MergeableCodecDataManager::isStringJsonFile))
+		Map<ResourceLocation,List<Resource>> resourceStacks = resourceManager.listResourceStacks(this.folderName, id -> id.getPath().endsWith(JSON_EXTENSION));
+		for (var entry : resourceStacks.entrySet())
 		{
-			final String namespace = resourceLocation.getNamespace();
-			final String filePath = resourceLocation.getPath();
-			final String dataPath = filePath.substring(this.folderName.length() + 1, filePath.length() - JSON_EXTENSION_LENGTH);
+			List<RAW> raws = new ArrayList<>();
+			ResourceLocation fullId = entry.getKey();
+			String fullPath = fullId.getPath(); // includes folderName/ and .json
+			ResourceLocation id = new ResourceLocation(
+				fullId.getNamespace(),
+				fullPath.substring(this.folderName.length() + 1, fullPath.length() - JSON_EXTENSION_LENGTH));
 			
-			// this is a json with identifier "somemodid:somedata"
-			final ResourceLocation jsonIdentifier = new ResourceLocation(namespace, dataPath);
-			// this is the list of all json objects with the given resource location (i.e. in multiple datapacks)
-			final List<RAW> unmergedRaws = new ArrayList<>();
-			// it's entirely possible that there are multiple jsons with this identifier,
-			// we can query the resource manager for these
-			try
+			for (Resource resource : entry.getValue())
 			{
-				for (Resource resource : resourceManager.getResources(resourceLocation))
+				try(Reader reader = resource.openAsReader())
 				{
-					try // with resources
-					(
-						final InputStream inputStream = resource.getInputStream();
-						final Reader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-					)
-					{
-						// read the json file and save the parsed object for later
-						// this json element may return null
-						final JsonElement jsonElement = GsonHelper.fromJson(this.gson, reader, JsonElement.class);
-						this.codec.parse(JsonOps.INSTANCE, jsonElement)
-							// resultOrPartial either returns a non-empty optional or calls the consumer given
-							.resultOrPartial(MergeableCodecDataManager::throwJsonParseException)
-							.ifPresent(unmergedRaws::add);
-					}
-					catch(RuntimeException | IOException exception)
-					{
-						this.logger.error("Data loader for {} could not read data {} from file {} in data pack {}", this.folderName, jsonIdentifier, resourceLocation, resource.getSourceName(), exception); 
-					}
-					finally
-					{
-						IOUtils.closeQuietly(resource);
-					}
+					JsonElement jsonElement = JsonParser.parseReader(reader);
+					this.codec.parse(JsonOps.INSTANCE, jsonElement)
+						.resultOrPartial(errorMsg -> LOGGER.error("Error deserializing json {} in folder {} from pack {}: {}", id, this.folderName, resource.sourcePackId(), errorMsg))
+						.ifPresent(raws::add);
+				}
+				catch(Exception e)
+				{
+					LOGGER.error(String.format(Locale.ENGLISH, "Error reading resource %s in folder %s from pack %s: ", id, this.folderName, resource.sourcePackId()), e);
 				}
 			}
-			catch (IOException exception)
-			{
-				this.logger.error("Data loader for {} could not read data {} from file {}", this.folderName, jsonIdentifier, resourceLocation, exception);
-			}
-			
-			
-			map.put(jsonIdentifier, unmergedRaws);
+			map.put(id, merger.apply(raws));
 		}
 
-		return MergeableCodecDataManager.mapValues(map, this.merger::apply);
-	}
-	
-	static boolean isStringJsonFile(final String filename)
-	{
-		return filename.endsWith(JSON_EXTENSION);
-	}
-	
-	static void throwJsonParseException(final String codecParseFailure)
-	{
-		throw new JsonParseException(codecParseFailure);
-	}
-	
-	static <Key, In, Out> Map<Key, Out> mapValues(final Map<Key,In> inputs, final Function<In, Out> mapper)
-	{
-		final Map<Key,Out> newMap = new HashMap<>();
-		
-		inputs.forEach((key, input) -> newMap.put(key, mapper.apply(input)));
-		
-		return newMap;
+		LOGGER.info("Data loader for {} loaded {} finalized objects", this.folderName, this.data.size());
+		return ImmutableMap.copyOf(map);
 	}
 	
 	/** Main-thread processing, runs after prepare concludes **/
 	@Override
 	protected void apply(final Map<ResourceLocation, FINE> processedData, final ResourceManager resourceManager, final ProfilerFiller profiler)
 	{
-		this.logger.info("Beginning loading of data for data loader: {}", this.folderName);
 		// now that we're on the main thread, we can finalize the data
 		this.data = processedData;
-		this.logger.info("Data loader for {} loaded {} finalized objects", this.folderName, this.data.size());
 	}
 
 	/**
-	 * This should be called at most once, during construction of your mod (static init of your main mod class is fine)
-	 * (FMLCommonSetupEvent *may* work as well)
+	 * This should be called at most once, during construction of your mod
 	 * Calling this method automatically subscribes a packet-sender to {@link OnDatapackSyncEvent}.
 	 * @param <PACKET> the packet type that will be sent on the given channel
 	 * @param channel The networking channel of your mod

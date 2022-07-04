@@ -19,6 +19,7 @@ public class FlavorTagSyncPacket
 {
 	private static final Codec<Map<ResourceLocation, Set<ResourceLocation>>> MAPPER =
 		Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC.listOf().xmap(ImmutableSet::copyOf, ImmutableList::copyOf));
+	public static Map<ResourceLocation, Set<ResourceLocation>> SYNCED_DATA = new HashMap<>(); 
 	
 	private final Map<ResourceLocation, Set<ResourceLocation>> map;
 		
@@ -46,6 +47,6 @@ public class FlavorTagSyncPacket
 	
 	private void handlePacketOnMainThread()
 	{
-		FlavorTags.DATA_LOADER.data = this.map;
+		SYNCED_DATA = this.map;
 	}
 }

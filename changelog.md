@@ -1,3 +1,10 @@
+# 3.0.0.0
+* Add SimpleModel and BlockStateFile to datagen package (alternative dataproviders for blockstate/model datagen)
+* Remove JsonDataProvider and DynamicRegistryDataGenerator (superceded by forge's JsonCodecProvider)
+* Refactored RegistryDispatcher based on forge's registry rewrite. Now directly creates registries of Codecs and does not require IForgeRegistryEntries (which no longer exist)
+* MergeableCodecDataManager now provides a getter to its data map, which is now immutable
+* CodecDataManager and MergeableCodecDataManager no longer accept loggers on construction
+
 # 2.2.0.1
 * Change DynamicRegistryDataGenerator to use memoized frozen registries
 

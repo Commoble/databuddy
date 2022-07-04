@@ -48,12 +48,16 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.RecordBuilder;
 
+import net.minecraft.data.DataProvider;
 import net.minecraft.resources.DelegatingOps;
 
 /**
- * Delegating DynamicOps that, when serializing data, serializes specified fields in a given order
- * before serializing any other fields.<br>
- * This may be helpful when writing human-readable data, such as json files.<br>
+ * <p>Delegating DynamicOps that, when serializing data, serializes specified fields in a given order
+ * before serializing any other fields.
+ * This may be helpful when writing human-readable data, such as json files.<p>
+ * <p>As of 1.19, {@link DataProvider#saveStable} now automatically places
+ * "type" and "parent" fields at the top of jsons, making this class no longer
+ * necessary for the use case of datagenerating jsons with those fields.</p>
  */
 public class WriteFieldsFirstOps<T> extends DelegatingOps<T>
 {

@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-
 import com.google.common.collect.Sets;
 
 import commoble.databuddy.data.MergeableCodecDataManager;
@@ -14,18 +12,13 @@ import net.minecraft.resources.ResourceLocation;
 public class FlavorTags
 {
 	public static final MergeableCodecDataManager<FlavorTag, Set<ResourceLocation>> DATA_LOADER = new MergeableCodecDataManager<>(
-		"flavors",										// folder name
-		LogManager.getLogger(),
+		"flavors",
 		FlavorTag.CODEC,
-		raws -> processFlavorTags(raws));					// data merger/processer					
-	
-
+		raws -> processFlavorTags(raws));		
 	
 	public static Set<ResourceLocation> processFlavorTags(final List<FlavorTag> raws)
 	{
-		Set<ResourceLocation> set = raws.stream().reduce(new HashSet<ResourceLocation>(), FlavorTags::processFlavorTag, Sets::union);
-		
-		return set;
+		return raws.stream().reduce(new HashSet<ResourceLocation>(), FlavorTags::processFlavorTag, Sets::union);
 	}
 	
 	public static Set<ResourceLocation> processFlavorTag(final Set<ResourceLocation> set, final FlavorTag raw)

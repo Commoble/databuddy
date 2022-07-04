@@ -14,7 +14,6 @@ import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
@@ -41,7 +40,6 @@ public class DataBuddyExampleMod
 	public DataBuddyExampleMod()
 	{
 		// get event busses
-		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 		
 		// create and subscribe our config instances
@@ -86,7 +84,10 @@ public class DataBuddyExampleMod
 	void testData(PlayerInteractEvent.RightClickBlock event)
 	{
 		// fires on both client and server threads
-		LOGGER.info(FlavorTags.DATA_LOADER.data);
+		LOGGER.info(
+			event.getPlayer().level.isClientSide
+				? FlavorTagSyncPacket.SYNCED_DATA
+				: FlavorTags.DATA_LOADER.getData());
 	}
 	
 	void testConfig(BreakEvent event)

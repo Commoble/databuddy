@@ -1,3 +1,28 @@
+/*
+
+The MIT License (MIT)
+
+Copyright (c) 2022 Joseph Bettendorff a.k.a. "Commoble"
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+ */
 package commoble.databuddy.codec;
 
 import java.util.function.Consumer;
@@ -10,7 +35,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 
 /**
@@ -24,51 +48,43 @@ import net.minecraftforge.registries.RegistryBuilder;
  * </pre>
  * Here, "yourmod:sometype" refers to a registered codec that defines how to read the rest of the json object.
  * @param <T> Data type -- the things that get parsed from jsons
- * @param <S> Serializer type -- the things that get registered
  * @param dispatcherCodec The codec for the serializer type.
  * @param dispatchedCodec The codec for the data type (this is what you would use for reading/writing json data)
  * @param registry The primary DeferredRegister for the serializer registry. Should only be used by the mod that created the registry.
+ * @param registryGetter Supplier for the backing serializer registry
  */
-public record RegistryDispatcher<T, S extends IForgeRegistryEntry<S>>(Codec<S> dispatcherCodec, Codec<T> dispatchedCodec, DeferredRegister<S> registry)
+public record RegistryDispatcher<T>(Codec<Codec<? extends T>> dispatcherCodec, Codec<T> dispatchedCodec, DeferredRegister<Codec<? extends T>> registry, Supplier<IForgeRegistry<Codec<? extends T>>> registryGetter)
 {
 	/**
 	 * Helper method for creating and registering a DeferredRegister for a registry of serializers.
 	 * @param <T> Data type -- the things that get parsed from jsons
-	 * @param <S> Serializer type -- the things that get registered
 	 * @param modBus mod bus obtained via FMLJavaModLoadingContext.get().getModEventBus()
-	 * @param registryClass The class for your serializer. Only one registry can be created for a given class, and this cannot be an interface class.
 	 * @param registryId The ID of your registry. Names should be singular to follow mojang's naming convention, e.g. "block", "bird"
 	 * @param typeLookup A function to get the registered serializer for a given T (e.g. RuleTest::getType)
-	 * @param codecLookup A function to get a sub-codec for a given serializer (e.g. RuleTestType::codec)
 	 * @param extraSettings Additional registry configuration if necessary.
-	 * RegistryBuilder#setName and #setType are automatically called and do not need to be called here.
 	 * @return Dispatch codec and a DeferredRegister for a new custom registry of serializers;
 	 * the deferred register will have been subscribed, and a forge registry will be created for it.
 	 */
-	public static <T, S extends IForgeRegistryEntry<S>> RegistryDispatcher<T,S> makeDispatchForgeRegistry(
+	public static <T> RegistryDispatcher<T> makeDispatchForgeRegistry(
 		final IEventBus modBus,
-		final Class<?> registryClass,
 		final ResourceLocation registryId,
-		final Function<T,? extends S> typeLookup,
-		final Function<S, Codec<? extends T>> codecLookup,
-		final Consumer<RegistryBuilder<S>> extraSettings)
+		final Function<T,? extends Codec<? extends T>> typeLookup,
+		final Consumer<RegistryBuilder<Codec<? extends T>>> extraSettings)
 	{
-		@SuppressWarnings("unchecked")
-		Class<S> genargifiedClass = (Class<S>)registryClass;
-		DeferredRegister<S> deferredRegister = DeferredRegister.create(registryId, registryId.getNamespace());
-		Supplier<RegistryBuilder<S>> builderFactory = () ->
+		DeferredRegister<Codec<? extends T>> deferredRegister = DeferredRegister.create(registryId, registryId.getNamespace());
+		Supplier<RegistryBuilder<Codec<? extends T>>> builderFactory = () ->
 		{
-			RegistryBuilder<S> builder = new RegistryBuilder<>();
+			RegistryBuilder<Codec<? extends T>> builder = new RegistryBuilder<>();
 			extraSettings.accept(builder);
 			return builder;
 		};
-		Supplier<IForgeRegistry<S>> registryGetter = deferredRegister.makeRegistry(genargifiedClass, builderFactory);
-		Codec<S> dispatcherCodec = ResourceLocation.CODEC.xmap(
+		Supplier<IForgeRegistry<Codec<? extends T>>> registryGetter = deferredRegister.makeRegistry(builderFactory);
+		Codec<Codec<? extends T>> dispatcherCodec = ResourceLocation.CODEC.xmap(
 			id -> registryGetter.get().getValue(id),
-			S::getRegistryName);
-		Codec<T> dispatchedCodec = dispatcherCodec.dispatch(typeLookup, codecLookup);
+			codec -> registryGetter.get().getKey(codec));
+		Codec<T> dispatchedCodec = dispatcherCodec.dispatch(typeLookup, Function.identity());
 		deferredRegister.register(modBus);
 		
-		return new RegistryDispatcher<>(dispatcherCodec, dispatchedCodec, deferredRegister);
+		return new RegistryDispatcher<>(dispatcherCodec, dispatchedCodec, deferredRegister, registryGetter);
 	}
 }
