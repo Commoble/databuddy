@@ -1,3 +1,6 @@
+# 3.0.0.1
+* Updated SimpleModel to support forge 41.0.64's block model jsons' render_type field
+
 # 3.0.0.0
 * Add SimpleModel and BlockStateFile to datagen package (alternative dataproviders for blockstate/model datagen)
 * Remove JsonDataProvider and DynamicRegistryDataGenerator (superceded by forge's JsonCodecProvider)
