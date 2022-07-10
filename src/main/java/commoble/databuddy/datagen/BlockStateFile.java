@@ -494,7 +494,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 			int ordinal = rotation.ordinal();
 			int x = (ordinal / 4) * 90;
 			int y = (ordinal % 4) * 90;
-			return new Model(model, x, y, false, weight);
+			return new Model(model, x, y, uvLock, weight);
 		}
 	}
 }

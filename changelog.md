@@ -1,3 +1,6 @@
+# 3.0.0.2
+* Fix BlockStateFile not generating `"uvlock": true` when uvlock=true
+
 # 3.0.0.1
 * Updated SimpleModel to support forge 41.0.64's block model jsons' render_type field
 
