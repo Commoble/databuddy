@@ -11,7 +11,7 @@ import com.mojang.serialization.JsonOps;
 
 import commoble.databuddy.codec.RegistryDispatcher;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.event.level.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;

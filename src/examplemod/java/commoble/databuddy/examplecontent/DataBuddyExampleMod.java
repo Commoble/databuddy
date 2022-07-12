@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.event.level.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -85,7 +85,7 @@ public class DataBuddyExampleMod
 	{
 		// fires on both client and server threads
 		LOGGER.info(
-			event.getPlayer().level.isClientSide
+			event.getEntity().level.isClientSide
 				? FlavorTagSyncPacket.SYNCED_DATA
 				: FlavorTags.DATA_LOADER.getData());
 	}

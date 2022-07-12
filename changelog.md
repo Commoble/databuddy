@@ -1,3 +1,7 @@
+# 3.0.0.3
+* Update to forge 41.0.98+
+* Add SimpleModel#createWithoutRenderType helper
+
 # 3.0.0.2
 * Fix BlockStateFile not generating `"uvlock": true` when uvlock=true
 

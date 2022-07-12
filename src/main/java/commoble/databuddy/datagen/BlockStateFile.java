@@ -50,7 +50,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.common.data.JsonCodecProvider;
-import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.data.event.GatherDataEvent;
 
 /**
  * Alternative datageneration for blockstate jsons. Usable with {@link JsonCodecProvider}.

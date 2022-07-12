@@ -39,7 +39,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraftforge.client.NamedRenderTypeManager;
 import net.minecraftforge.common.data.JsonCodecProvider;
-import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.data.event.GatherDataEvent;
 
 /**
  * Represents a parented model file. The codec can be used for datagen via {@link #addDataProvider(GatherDataEvent, String, DynamicOps, Map)}.
@@ -81,6 +81,18 @@ public record SimpleModel(ResourceLocation parent, Map<String, ResourceLocation>
 	{
 		DataGenerator dataGenerator = event.getGenerator();
 		dataGenerator.addProvider(event.includeClient(), new JsonCodecProvider<SimpleModel>(dataGenerator, event.getExistingFileHelper(), modid, dynamicOps, PackType.CLIENT_RESOURCES, "models", CODEC, entries));
+	}
+
+	/**
+	 * Creates a SimpleModel with specified parent and no explicit render type.
+	 * The model will inherit a render type from its parent if it has one,
+	 * baked block models will use the block rendertype lookup map if no parent has a render type.
+	 * @param parent Model id of the parent modek, e.g. "minecraft:block/cube_all"
+	 * @return Builder-like model that allows chaining via {@link SimpleModel#addTexture(String, ResourceLocation)}
+	 */
+	public static SimpleModel createWithoutRenderType(ResourceLocation parent)
+	{
+		return new SimpleModel(parent, new HashMap<>(), Optional.empty());
 	}
 	
 	/**
