@@ -121,15 +121,16 @@ jar {
 		include "commoble/databuddy/${x}/**"
 	    manifest {
 	        attributes([
-	            "Specification-Title": "${modid}",
+	            "Specification-Title": "${modid}-${x}",
 	            "Specification-Vendor": "Commoble",
 	            "Specification-Version": "1", // We are version 1 of ourselves
-	            "Implementation-Title": project.name,
+	            "Implementation-Title": "${modid}-${x}",
 	            "Implementation-Version": "${project.version}",
 	            "Implementation-Vendor" :"Commoble",
 	            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-				"Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}",
-				"FMLModType": "GAMELIBRARY"
+				"Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}:${x}",
+				"FMLModType": "GAMELIBRARY",
+				"Automatic-Module-Name": "databuddy_${x}" // fixes forge failing to load sublibraries in dev
 	        ])
     }
 	}

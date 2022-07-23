@@ -1,3 +1,6 @@
+# 3.0.0.4
+* Fix sublibrary dependencies not working in dev environments
+
 # 3.0.0.3
 * Update to forge 41.0.98+
 * Add SimpleModel#createWithoutRenderType helper
