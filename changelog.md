@@ -1,3 +1,6 @@
+# 3.0.0.5
+* Fix ConfigHelper#defineObject not working when the default value was an empty list
+
 # 3.0.0.4
 * Fix sublibrary dependencies not working in dev environments
 

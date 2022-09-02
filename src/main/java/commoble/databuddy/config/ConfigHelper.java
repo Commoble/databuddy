@@ -26,6 +26,7 @@ package commoble.databuddy.config;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -290,6 +291,17 @@ public class ConfigHelper
 		public Object createString(String value)
 		{
 			return value;
+		}
+		
+		@Override
+		public DataResult<Object> mergeToList(Object list, List<Object> values)
+		{
+			// default mergeToList returns the null object if list is empty;
+			// toml doesn't support null values so we need to convert to an empty list
+			return DynamicOps.super.mergeToList(list, values)
+				.map(obj -> obj == this.empty()
+					? new ArrayList<>()
+					: obj);
 		}
 
 		@Override

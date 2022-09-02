@@ -8,6 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import commoble.databuddy.config.ConfigHelper;
 import commoble.databuddy.config.ConfigHelper.ConfigObject;
+import commoble.databuddy.examplecontent.ExampleConfig.TestObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -16,7 +17,8 @@ import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 public record ExampleConfig(
 	ConfigValue<Integer> bones,
 	ConfigValue<Double> bananas,
-	ConfigObject<TestObject> testObject)
+	ConfigObject<TestObject> testObject,
+	ConfigObject<List<Long>> list)
 {
 	public static ExampleConfig create(ForgeConfigSpec.Builder builder)
 	{
@@ -42,9 +44,12 @@ public record ExampleConfig(
 					new ResourceLocation("minecraft:iron")),
 					true));
 		
+		builder.comment("Empty list");
+		ConfigObject<List<Long>> list = ConfigHelper.defineObject(builder, "list", Codec.LONG.listOf(), List.of());
+		
 		builder.pop();
 		
-		return new ExampleConfig(bones, bananas, testObject);
+		return new ExampleConfig(bones, bananas, testObject, list);
 	}
 	
 	public static record TestObject(BlockPos pos, List<ResourceLocation> ids, boolean bool)
