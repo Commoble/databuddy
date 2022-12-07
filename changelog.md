@@ -1,3 +1,6 @@
+# 3.0.0.6
+* Fix crash on server start due to MergeableCodecDataManager referring to missing ImmutableMap class
+
 # 3.0.0.5
 * Fix ConfigHelper#defineObject not working when the default value was an empty list
 
