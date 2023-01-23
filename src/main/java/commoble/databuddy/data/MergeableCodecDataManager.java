@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.ibm.icu.impl.locale.XCldrStub.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 
