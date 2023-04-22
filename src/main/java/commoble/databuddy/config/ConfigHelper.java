@@ -169,6 +169,22 @@ public class ConfigHelper
 			return this.parsedObject;
 		}
 		
+		/**
+		 * Sets the config field to a new value and saves the config
+		 * @param value Value to serialize to the config. If object cannot be serialized, an error will be logged and no change will occur.
+		 */
+		public void set(T value)
+		{
+			this.codec.encodeStart(TomlConfigOps.INSTANCE, value)
+				.resultOrPartial(e -> LOGGER.error("Config failure: Could not save value {} due to encoding error: {}", value, e))
+				.ifPresent(serializedObject -> {
+					this.value.set(serializedObject);
+					this.value.save();
+					this.parsedObject = value;
+					this.cachedObject = serializedObject;
+				});
+		}
+		
 		private T getReparsedObject(Object obj)
 		{
 			DataResult<T> parseResult = this.codec.parse(TomlConfigOps.INSTANCE, obj);

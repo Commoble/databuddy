@@ -101,5 +101,7 @@ public class DataBuddyExampleMod
 		configLogger.accept(this.config);
 		configLogger.accept(this.firstConfig);
 		configLogger.accept(this.secondConfig);
+		
+		this.config.incrementableField().set(this.config.incrementableField().get() + 1);
 	}
 }

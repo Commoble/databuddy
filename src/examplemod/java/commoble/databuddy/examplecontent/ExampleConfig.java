@@ -17,6 +17,7 @@ import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 public record ExampleConfig(
 	ConfigValue<Integer> bones,
 	ConfigValue<Double> bananas,
+	ConfigObject<Integer> incrementableField,
 	ConfigObject<TestObject> testObject,
 	ConfigObject<List<Long>> list)
 {
@@ -34,6 +35,9 @@ public record ExampleConfig(
 			.translation("configexample.bananas")
 			.defineInRange("bananas", 0.5D, -10D, Double.MAX_VALUE);
 		
+		// This object is used to test writing new values to configs via ConfigObjects
+		ConfigObject<Integer> incrementableField = ConfigHelper.defineObject(builder, "incrementableField", Codec.INT, 0);
+		
 		// comments and such for ConfigObjects can be defined before defining the object
 		builder.comment("Example object");
 		ConfigObject<TestObject> testObject = ConfigHelper.defineObject(builder, "testObject", TestObject.CODEC,
@@ -49,7 +53,7 @@ public record ExampleConfig(
 		
 		builder.pop();
 		
-		return new ExampleConfig(bones, bananas, testObject, list);
+		return new ExampleConfig(bones, bananas, incrementableField, testObject, list);
 	}
 	
 	public static record TestObject(BlockPos pos, List<ResourceLocation> ids, boolean bool)

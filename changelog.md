@@ -1,3 +1,6 @@
+# 3.0.0.7
+* ConfigHelper.ConfigObject now has a "set" method to set/save the config value
+
 # 3.0.0.6
 * Fix crash on server start due to MergeableCodecDataManager referring to missing ImmutableMap class
 
