@@ -256,7 +256,7 @@ public class ConfigHelper
 		{
 			return input instanceof Number n
 				? DataResult.success(n)
-				: DataResult.error("Not a number: " + input);
+				: DataResult.error(() -> "Not a number: " + input);
 		}
 
 		@Override
@@ -269,7 +269,7 @@ public class ConfigHelper
 				return DataResult.success(n.intValue() > 0);
 			}
 			else
-				return DataResult.error("Not a boolean: " + input);
+				return DataResult.error(() -> "Not a boolean: " + input);
 		}
 
 		@Override
@@ -295,7 +295,7 @@ public class ConfigHelper
 		{
 			if (input instanceof Config || input instanceof Collection)
 			{
-				return DataResult.error("Not a string: " + input);
+				return DataResult.error(() -> "Not a string: " + input);
 			}
 			else
 			{
@@ -325,7 +325,7 @@ public class ConfigHelper
 		{
 			if (!(list instanceof Collection) && list != this.empty())
 			{
-				return DataResult.error("mergeToList called with not a list: " + list, list);
+				return DataResult.error(() -> "mergeToList called with not a list: " + list, list);
 			}
 			final Collection<Object> result = new ArrayList<>();
 			if (list != this.empty())
@@ -343,13 +343,13 @@ public class ConfigHelper
 		{
 			if (!(map instanceof Config) && map != this.empty())
 			{
-				return DataResult.error("mergeToMap called with not a map: " + map, map);
+				return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
 			}
 			DataResult<String> stringResult = this.getStringValue(key);
 			Optional<PartialResult<String>> badResult = stringResult.error();
 			if (badResult.isPresent())
 			{
-				return DataResult.error("key is not a string: " + key, map);
+				return DataResult.error(() -> "key is not a string: " + key, map);
 			}
 			return stringResult.flatMap(s ->{
 
@@ -369,7 +369,7 @@ public class ConfigHelper
 		{
 			if (!(input instanceof Config))
 			{
-				return DataResult.error("Not a Config: " + input);
+				return DataResult.error(() -> "Not a Config: " + input);
 			}
 			final Config config = (Config)input;
 			return DataResult.success(config.entrySet().stream().map(entry -> Pair.of(entry.getKey(), entry.getValue())));
@@ -392,7 +392,7 @@ public class ConfigHelper
 				Collection<Object> collection = (Collection<Object>)input;
 				return DataResult.success(collection.stream());
 			}
-			return DataResult.error("Not a collection: " + input);
+			return DataResult.error(() -> "Not a collection: " + input);
 		}
 
 		@Override

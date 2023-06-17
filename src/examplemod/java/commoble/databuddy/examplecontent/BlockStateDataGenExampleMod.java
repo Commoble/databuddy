@@ -15,10 +15,9 @@ import commoble.databuddy.datagen.BlockStateFile.WhenApply;
 import commoble.databuddy.datagen.SimpleModel;
 import net.minecraft.Util;
 import net.minecraft.client.resources.model.BlockModelRotation;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -27,14 +26,13 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.world.level.material.Material;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -44,23 +42,23 @@ import net.minecraftforge.registries.RegistryObject;
 @EventBusSubscriber(modid=DataBuddyExampleMod.MODID, bus=Bus.MOD)
 public class BlockStateDataGenExampleMod
 {
-	private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registry.BLOCK_REGISTRY, DataBuddyExampleMod.MODID);
-	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registry.ITEM_REGISTRY, DataBuddyExampleMod.MODID);
+	private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, DataBuddyExampleMod.MODID);
+	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, DataBuddyExampleMod.MODID);
 	private static final RegistryObject<Block> RANDOM_SPONGE = BLOCKS.register("random_sponge", () ->
-		new Block(BlockBehaviour.Properties.of(Material.STONE)));
+		new Block(BlockBehaviour.Properties.of()));
 	private static final RegistryObject<SlabBlock> SPONGE_SLAB = BLOCKS.register("sponge_slab", () ->
-		new SlabBlock(BlockBehaviour.Properties.of(Material.STONE)));
+		new SlabBlock(BlockBehaviour.Properties.of()));
 	private static final RegistryObject<RedStoneWireBlock> WHITESTONE_DUST = BLOCKS.register("whitestone_wire", () ->
 		new RedStoneWireBlock(BlockBehaviour.Properties.copy(Blocks.REDSTONE_WIRE)));
 	
 	static
 	{
 		ITEMS.register("random_sponge", () ->
-			new BlockItem(RANDOM_SPONGE.get(), new Item.Properties().tab(CreativeModeTab.TAB_BUILDING_BLOCKS)));
+			new BlockItem(RANDOM_SPONGE.get(), new Item.Properties()));
 		ITEMS.register("sponge_slab", () ->
-			new BlockItem(SPONGE_SLAB.get(), new Item.Properties().tab(CreativeModeTab.TAB_BUILDING_BLOCKS)));
+			new BlockItem(SPONGE_SLAB.get(), new Item.Properties()));
 		ITEMS.register("whitestone", () ->
-			new BlockItem(WHITESTONE_DUST.get(), new Item.Properties().tab(CreativeModeTab.TAB_BUILDING_BLOCKS)));
+			new BlockItem(WHITESTONE_DUST.get(), new Item.Properties()));
 	}
 	
 	@SubscribeEvent

@@ -1,3 +1,4 @@
 {
-  "parent": "databuddy:block/sponge_slab"
+  "parent": "databuddy:block/sponge_slab",
+  "render_type": "minecraft:solid"
 }

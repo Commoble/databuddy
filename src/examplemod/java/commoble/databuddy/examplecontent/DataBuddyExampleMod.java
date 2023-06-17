@@ -85,7 +85,7 @@ public class DataBuddyExampleMod
 	{
 		// fires on both client and server threads
 		LOGGER.info(
-			event.getEntity().level.isClientSide
+			event.getEntity().level().isClientSide()
 				? FlavorTagSyncPacket.SYNCED_DATA
 				: FlavorTags.DATA_LOADER.getData());
 	}
