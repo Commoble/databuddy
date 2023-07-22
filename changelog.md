@@ -1,3 +1,9 @@
+# 4.0.0.1
+* Temporarily added a KeyedCodecJsonDataManager class, which allows non-resourcelocation keys. This will be removed and merged into CodecJsonDataManager in the future.
+
+# 4.0.0.0
+* Updated to Minecraft 1.20.1
+
 # 3.0.0.7
 * ConfigHelper.ConfigObject now has a "set" method to set/save the config value
 

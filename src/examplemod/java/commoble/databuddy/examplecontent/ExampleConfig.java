@@ -8,7 +8,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import commoble.databuddy.config.ConfigHelper;
 import commoble.databuddy.config.ConfigHelper.ConfigObject;
-import commoble.databuddy.examplecontent.ExampleConfig.TestObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
