@@ -43,18 +43,17 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.PacketDistributor.PacketTarget;
-import net.minecraftforge.network.simple.SimpleChannel;
-
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor.PacketTarget;
 /**
  * Generic data loader for Codec-parsable data.
  * This works best if initialized during your mod's construction.
@@ -156,29 +155,26 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 	/**
 	 * This should be called at most once, during construction of your mod
 	 * Calling this method automatically subscribes a packet-sender to {@link OnDatapackSyncEvent}.
-	 * @param <PACKET> the packet type that will be sent on the given channel
-	 * @param channel The networking channel of your mod
+	 * @param <PACKET> the packet type that will be sent
 	 * @param packetFactory  A packet constructor or factory method that converts the given map to a packet object to send on the given channel
 	 * @return this manager object
 	 */
-	public <PACKET> MergeableCodecDataManager<RAW, FINE> subscribeAsSyncable(final SimpleChannel channel,
-		final Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
+	public <PACKET extends CustomPacketPayload> MergeableCodecDataManager<RAW, FINE> subscribeAsSyncable(final Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
 	{
-		MinecraftForge.EVENT_BUS.addListener(this.getDatapackSyncListener(channel, packetFactory));
+		NeoForge.EVENT_BUS.addListener(this.getDatapackSyncListener(packetFactory));
 		return this;
 	}
 	
 	/** Generate an event listener function for the on-datapack-sync event **/
-	private <PACKET> Consumer<OnDatapackSyncEvent> getDatapackSyncListener(final SimpleChannel channel,
-		final Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
+	private <PACKET extends CustomPacketPayload> Consumer<OnDatapackSyncEvent> getDatapackSyncListener(final Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
 	{
 		return event -> {
 			ServerPlayer player = event.getPlayer();
 			PACKET packet = packetFactory.apply(this.data);
 			PacketTarget target = player == null
 				? PacketDistributor.ALL.noArg()
-				: PacketDistributor.PLAYER.with(() -> player);
-			channel.send(target, packet);
+				: PacketDistributor.PLAYER.with(player);
+			target.send(packet);
 		};
 	}
 }

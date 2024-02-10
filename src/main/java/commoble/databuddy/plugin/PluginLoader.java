@@ -41,8 +41,8 @@ import org.objectweb.asm.Type;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.forgespi.language.ModFileScanData.AnnotationData;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforgespi.language.ModFileScanData.AnnotationData;
 
 /**
  * Helper for providing annotation apis to other mods and load and construct their classes

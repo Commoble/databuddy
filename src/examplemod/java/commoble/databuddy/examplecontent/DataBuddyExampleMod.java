@@ -7,15 +7,15 @@ import org.apache.logging.log4j.Logger;
 
 import commoble.databuddy.config.ConfigHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.level.BlockEvent.BreakEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
+import net.neoforged.neoforge.network.registration.NetworkRegistry;
 
 @Mod(DataBuddyExampleMod.MODID)
 public class DataBuddyExampleMod
@@ -34,13 +34,11 @@ public class DataBuddyExampleMod
 			() -> CHANNEL_PROTOCOL,
 			CHANNEL_PROTOCOL::equals,
 			CHANNEL_PROTOCOL::equals);
-		
-	
-	// constructed by forge during modloading
-	public DataBuddyExampleMod()
+
+	public DataBuddyExampleMod(IEventBus modBus)
 	{
 		// get event busses
-		IEventBus forgeBus = MinecraftForge.EVENT_BUS;
+		IEventBus forgeBus = NeoForge.EVENT_BUS;
 		
 		// create and subscribe our config instances
 		this.config = ConfigHelper.register(
@@ -51,22 +49,18 @@ public class DataBuddyExampleMod
 		this.secondConfig = ConfigHelper.register(
 			ModConfig.Type.COMMON, ExampleConfig::create, "databuddy/secondconfig");
 		
-		this.registerPackets();
-		
 		// subscribe to events
+		modBus.addListener(this::onRegisterPackets);
 		forgeBus.addListener(this::onAddReloadListeners);
 		forgeBus.addListener(this::testData);
 		forgeBus.addListener(this::testConfig);
 		FlavorTags.DATA_LOADER.subscribeAsSyncable(CHANNEL, FlavorTagSyncPacket::new);
 	}
 	
-	void registerPackets()
+	void onRegisterPackets(RegisterPayloadHandlerEvent event)
 	{
-		int id = 0;
-		CHANNEL.registerMessage(id++, FlavorTagSyncPacket.class,
-			FlavorTagSyncPacket::encode,
-			FlavorTagSyncPacket::decode,
-			FlavorTagSyncPacket::onPacketReceived);
+		event.registrar(MODID)
+			.<FlavorTagSyncPacket>play(FlavorTagSyncPacket.ID, FlavorTagSyncPacket::decode, FlavorTagSyncPacket::onPacketReceived);
 	}
 	
 	// register our data loader to the server
