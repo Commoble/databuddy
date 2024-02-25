@@ -34,7 +34,8 @@ import net.neoforged.neoforge.network.PacketDistributor.PacketTarget;
  * to register instances of this as a data loader or asset loader, respectively.
  * Use {@link CodecJsonDataManager#subscribeAsSyncable(Function)} to sync loaded data from
  * server to client, or use the {@link OnDatapackSyncEvent} to implement syncing yourself.
- * @param <T> The type of the objects that the codec is parsing jsons as
+ * @param <K> The type of key for the map of objects we parsed from json
+ * @param <V> The type of the objects that the codec is parsing jsons as
  */
 public class CodecJsonDataManager<K,V> extends SimpleJsonResourceReloadListener
 {
@@ -51,16 +52,36 @@ public class CodecJsonDataManager<K,V> extends SimpleJsonResourceReloadListener
 	/** The raw data that we parsed from json last time resources were reloaded **/
 	protected Map<K, V> data = new HashMap<>();
 	
+	/**
+	 * Creates a CodecJsonDataManager using ResourceLocations for map keys
+	 * @param <T> The type of the objects that the codec is parsing jsons as
+	 * @param folderName String path of the loading folder (should probably be "yourmodid/yourstuff")
+	 * @param valueCodec Codec to load data with
+	 * @return CodecJsonDataManager using ResourceLocations for map keys
+	 */
 	public static <T> CodecJsonDataManager<ResourceLocation,T> simple(String folderName, Codec<T> valueCodec)
 	{
 		return new CodecJsonDataManager<>(folderName, DataResult::success, valueCodec);
 	}
 
+	/**
+	 * Creates a CodecJsonDataManager using the standard gson instance
+	 * @param folderName String path of the loading folder (should probably be "yourmodid/yourstuff")
+	 * @param keyReader Function to convert resourcelocations to the your map keys
+	 * @param valueCodec Codec to load data with
+	 */
 	public CodecJsonDataManager(String folderName, Function<ResourceLocation, DataResult<K>> keyReader, Codec<V> valueCodec)
 	{
 		this(folderName, keyReader, valueCodec, STANDARD_GSON);
 	}
 
+	/**
+	 * Creates a CodecJsonDataManager using a custom gson instance
+	 * @param folderName String path of the loading folder (should probably be "yourmodid/yourstuff")
+	 * @param keyReader Function to convert resourcelocations to the your map keys
+	 * @param valueCodec Codec to load data with
+	 * @param gson gson
+	 */
 	public CodecJsonDataManager(String folderName, Function<ResourceLocation, DataResult<K>> keyReader, Codec<V> valueCodec, Gson gson)
 	{
 		super(gson, folderName);
