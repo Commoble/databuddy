@@ -28,6 +28,7 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 configurations {
 	examplemodCompileClasspath.extendsFrom(compileClasspath)
+	examplemodRuntimeClasspath.extendsFrom(runtimeClasspath)
 }
 
 runs {

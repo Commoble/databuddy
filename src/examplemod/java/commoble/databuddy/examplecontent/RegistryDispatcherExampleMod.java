@@ -22,7 +22,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 /*
  * Example of using RegistryDispatcher to make serializer registries
  */
-@EventBusSubscriber(modid=DataBuddyExampleMod.MODID, bus=Bus.MOD)
+@EventBusSubscriber(modid=DataBuddyExampleMod.MODID, bus=Bus.FORGE)
 public class RegistryDispatcherExampleMod
 {
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -46,6 +46,22 @@ public class RegistryDispatcherExampleMod
 		public int color();
 	}
 	
+	@SubscribeEvent
+	public static void onBlockBreak(BreakEvent event)
+	{
+		String json = """
+			{
+				"type": "databuddy:cheddar"
+			}
+			""";
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		JsonElement jsonElement = gson.fromJson(json, JsonElement.class);
+		Cheese cheese = CHEESE_DISPATCHER.dispatchedCodec().parse(JsonOps.INSTANCE, jsonElement)
+			.result()
+			.get();
+		LOGGER.info(CHEESE_DISPATCHER.codecRegistry().getKey(cheese.getType())); // logs "databuddy:cheddar"
+	}
+	
 	// subclass of the data class, the "type" field in Cheese jsons would indicate to use e.g. the databuddy:cheddar serializer
 	public static class Cheddar implements Cheese
 	{
@@ -61,25 +77,4 @@ public class RegistryDispatcherExampleMod
 			return 0;
 		}
 	}
-	
-	@EventBusSubscriber(modid=DataBuddyExampleMod.MODID, bus = Bus.FORGE)
-	public static class ForgeEvents
-	{
-		@SubscribeEvent
-		public static void onBlockBreak(BreakEvent event)
-		{
-			String json = """
-				{
-					"type": "databuddy:cheddar"
-				}
-				""";
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			JsonElement jsonElement = gson.fromJson(json, JsonElement.class);
-			Cheese cheese = CHEESE_DISPATCHER.dispatchedCodec().parse(JsonOps.INSTANCE, jsonElement)
-				.result()
-				.get();
-			LOGGER.info(CHEESE_DISPATCHER.codecRegistry().getKey(cheese.getType())); // logs "databuddy:cheddar"
-		}
-	}
-
 }
