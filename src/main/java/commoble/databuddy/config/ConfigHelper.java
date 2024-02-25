@@ -48,10 +48,10 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DataResult.PartialResult;
 import com.mojang.serialization.DynamicOps;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 
 /**
@@ -77,7 +77,7 @@ public class ConfigHelper
 	 */
 	public static <T> T register(
 		final ModConfig.Type configType,
-		final Function<ForgeConfigSpec.Builder, T> configFactory)
+		final Function<ModConfigSpec.Builder, T> configFactory)
 	{
 		return register(configType, configFactory, null);
 	}
@@ -97,14 +97,14 @@ public class ConfigHelper
 	 */
 	public static <T> T register(
 		final ModConfig.Type configType,
-		final Function<ForgeConfigSpec.Builder, T> configFactory,
+		final Function<ModConfigSpec.Builder, T> configFactory,
 		final @Nullable String configName)
 	{
 		final ModLoadingContext modContext = ModLoadingContext.get();
-		final org.apache.commons.lang3.tuple.Pair<T, ForgeConfigSpec> entry = new ForgeConfigSpec.Builder()
+		final org.apache.commons.lang3.tuple.Pair<T, ModConfigSpec> entry = new ModConfigSpec.Builder()
 			.configure(configFactory);
 		final T config = entry.getLeft();
-		final ForgeConfigSpec spec = entry.getRight();
+		final ModConfigSpec spec = entry.getRight();
 		if (configName == null)
 		{
 			modContext.registerConfig(configType,spec);
@@ -128,7 +128,7 @@ public class ConfigHelper
 	 * If the codec fails to deserialize the config field at a later time, an error message will be logged and this default instance will be used instead.  
 	 * @return A reload-sensitive wrapper around your config object value. Use ConfigObject#get to get the most up-to-date object.
 	 */
-	public static <T> ConfigObject<T> defineObject(ForgeConfigSpec.Builder builder, String name, Codec<T> codec, T defaultObject)
+	public static <T> ConfigObject<T> defineObject(ModConfigSpec.Builder builder, String name, Codec<T> codec, T defaultObject)
 	{
 		DataResult<Object> encodeResult = codec.encodeStart(TomlConfigOps.INSTANCE, defaultObject);
 		Object encodedObject = encodeResult.getOrThrow(false, s -> LOGGER.error("Unable to encode default value: {}", s));

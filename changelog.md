@@ -1,3 +1,9 @@
+# 5.0.0.0
+* Updated to MC 1.20.4 / Neoforge 20.4.167. Some APIs have received undocumented changes as a result of this.
+* Moved all packages to the net.commoble domain
+* No longer providing individual sublibraries like :config at this time (feel free to paste classes into your mods if you don't need all of databuddy)
+* Removed KeyedCOdecJsonDataManager, migrated its functionality to CodecJsonDataManager
+
 # 4.0.0.1
 * Temporarily added a KeyedCodecJsonDataManager class, which allows non-resourcelocation keys. This will be removed and merged into CodecJsonDataManager in the future.
 

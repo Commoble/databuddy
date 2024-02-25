@@ -161,14 +161,7 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 	 */
 	public <PACKET extends CustomPacketPayload> MergeableCodecDataManager<RAW, FINE> subscribeAsSyncable(final Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
 	{
-		NeoForge.EVENT_BUS.addListener(this.getDatapackSyncListener(packetFactory));
-		return this;
-	}
-	
-	/** Generate an event listener function for the on-datapack-sync event **/
-	private <PACKET extends CustomPacketPayload> Consumer<OnDatapackSyncEvent> getDatapackSyncListener(final Function<Map<ResourceLocation, FINE>, PACKET> packetFactory)
-	{
-		return event -> {
+		Consumer<OnDatapackSyncEvent> syncEventHandler = event -> {
 			ServerPlayer player = event.getPlayer();
 			PACKET packet = packetFactory.apply(this.data);
 			PacketTarget target = player == null
@@ -176,5 +169,7 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 				: PacketDistributor.PLAYER.with(player);
 			target.send(packet);
 		};
+		NeoForge.EVENT_BUS.addListener(syncEventHandler);
+		return this;
 	}
 }

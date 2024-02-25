@@ -11,12 +11,13 @@ import com.mojang.serialization.JsonOps;
 
 import commoble.databuddy.codec.RegistryDispatcher;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.event.level.BlockEvent.BreakEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod.EventBusSubscriber;
+import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.javafmlmod.FMLModContainer;
+import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 /*
  * Example of using RegistryDispatcher to make serializer registries
@@ -29,13 +30,13 @@ public class RegistryDispatcherExampleMod
 	// The RegistryDispatcher contains the codec for your data class and the deferred register for your serializers.
 	// The DeferredRegister will be automatically registered and a forge registry will be created and registered.
 	public static final RegistryDispatcher<Cheese> CHEESE_DISPATCHER = RegistryDispatcher.makeDispatchForgeRegistry(
-		FMLJavaModLoadingContext.get().getModEventBus(),
+		((FMLModContainer)(ModList.get().getModContainerById(DataBuddyExampleMod.MODID).get())).getEventBus(),
 		new ResourceLocation(DataBuddyExampleMod.MODID, "cheese"),
 		cheese -> cheese.getType(), // using a method reference here seems to confuse eclipse
 		builder->{});
 	
 	// RegistryObjects can be created from the dispatcher's deferred registry
-	public static final RegistryObject<Codec<Cheddar>> CHEDDAR = CHEESE_DISPATCHER.registry()
+	public static final DeferredHolder<Codec<? extends Cheese>, Codec<Cheddar>> CHEDDAR = CHEESE_DISPATCHER.defreg()
 		.register("cheddar", () -> Codec.unit(new Cheddar()));
 	
 	// Base class for your data classes, instances of this could potentially be parsed from jsons or whatever
@@ -77,7 +78,7 @@ public class RegistryDispatcherExampleMod
 			Cheese cheese = CHEESE_DISPATCHER.dispatchedCodec().parse(JsonOps.INSTANCE, jsonElement)
 				.result()
 				.get();
-			LOGGER.info(CHEESE_DISPATCHER.registryGetter().get().getKey(cheese.getType())); // logs "databuddy:cheddar"
+			LOGGER.info(CHEESE_DISPATCHER.codecRegistry().getKey(cheese.getType())); // logs "databuddy:cheddar"
 		}
 	}
 

@@ -6,7 +6,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import commoble.databuddy.config.ConfigHelper;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -15,7 +14,6 @@ import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
-import net.neoforged.neoforge.network.registration.NetworkRegistry;
 
 @Mod(DataBuddyExampleMod.MODID)
 public class DataBuddyExampleMod
@@ -26,14 +24,6 @@ public class DataBuddyExampleMod
 	private final ExampleConfig config;
 	private final ExampleConfig firstConfig;
 	private final ExampleConfig secondConfig;
-	
-	private static final String CHANNEL_PROTOCOL = "0";
-	
-	public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-		new ResourceLocation(MODID, "main"),
-			() -> CHANNEL_PROTOCOL,
-			CHANNEL_PROTOCOL::equals,
-			CHANNEL_PROTOCOL::equals);
 
 	public DataBuddyExampleMod(IEventBus modBus)
 	{
@@ -54,7 +44,7 @@ public class DataBuddyExampleMod
 		forgeBus.addListener(this::onAddReloadListeners);
 		forgeBus.addListener(this::testData);
 		forgeBus.addListener(this::testConfig);
-		FlavorTags.DATA_LOADER.subscribeAsSyncable(CHANNEL, FlavorTagSyncPacket::new);
+		FlavorTags.DATA_LOADER.subscribeAsSyncable(FlavorTagSyncPacket::new);
 	}
 	
 	void onRegisterPackets(RegisterPayloadHandlerEvent event)

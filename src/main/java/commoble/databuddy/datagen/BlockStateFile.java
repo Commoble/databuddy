@@ -46,7 +46,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -74,8 +73,13 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 	public static void addDataProvider(GatherDataEvent event, String modid, DynamicOps<JsonElement> dynamicOps, Map<ResourceLocation, BlockStateFile> entries)
 	{
 		DataGenerator dataGenerator = event.getGenerator();
-		PackOutput packOutput = dataGenerator.getPackOutput();
-		dataGenerator.addProvider(event.includeClient(), new JsonCodecProvider<BlockStateFile>(packOutput, event.getExistingFileHelper(), modid, dynamicOps, PackType.CLIENT_RESOURCES, "blockstates", CODEC, entries));
+		dataGenerator.addProvider(event.includeClient(), new JsonDataProvider<BlockStateFile>(
+			dataGenerator.getPackOutput(),
+			dataGenerator,
+			PackOutput.Target.RESOURCE_PACK,
+			"blockstates",
+			CODEC,
+			entries));
 	}
 	
 	/**

@@ -10,8 +10,8 @@ import commoble.databuddy.config.ConfigHelper;
 import commoble.databuddy.config.ConfigHelper.ConfigObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public record ExampleConfig(
 	ConfigValue<Integer> bones,
@@ -20,7 +20,7 @@ public record ExampleConfig(
 	ConfigObject<TestObject> testObject,
 	ConfigObject<List<Long>> list)
 {
-	public static ExampleConfig create(ForgeConfigSpec.Builder builder)
+	public static ExampleConfig create(ModConfigSpec.Builder builder)
 	{
 		builder.push("General Category");
 		

@@ -35,11 +35,10 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
-import net.minecraftforge.client.NamedRenderTypeManager;
-import net.minecraftforge.common.data.JsonCodecProvider;
-import net.minecraftforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.client.NamedRenderTypeManager;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 /**
  * Represents a parented model file. The codec can be used for datagen via {@link #addDataProvider(GatherDataEvent, String, DynamicOps, Map)}.
@@ -59,18 +58,6 @@ public record SimpleModel(ResourceLocation parent, Map<String, ResourceLocation>
 		).apply(builder, SimpleModel::new));
 	
 	/**
-	 * @param parent ResourceLocation of the parent model
-	 * @param textures Map of String texture identifiers (specific to this model or its parent) to ResourceLocation ids of textures
-	 * 
-	 * @deprecated Use the main constructor or {@link SimpleModel#create(ResourceLocation)}
-	 */
-	@Deprecated(forRemoval=true, since="3.0.0.1")
-	public SimpleModel(ResourceLocation parent, Map<String,ResourceLocation> textures)
-	{
-		this(parent, textures, Optional.empty());
-	}
-	
-	/**
 	 * Creates a DataProvider and adds the provided GatherDataEvent's datagenerator, generating in the assets/namespace/models/ folder
 	 * @param event GatherDataEvent containing datagen context
 	 * @param modid String modid for logging purposes
@@ -80,7 +67,13 @@ public record SimpleModel(ResourceLocation parent, Map<String, ResourceLocation>
 	public static void addDataProvider(GatherDataEvent event, String modid, DynamicOps<JsonElement> dynamicOps, Map<ResourceLocation,SimpleModel> entries)
 	{
 		DataGenerator dataGenerator = event.getGenerator();
-		dataGenerator.addProvider(event.includeClient(), new JsonCodecProvider<SimpleModel>(dataGenerator.getPackOutput(), event.getExistingFileHelper(), modid, dynamicOps, PackType.CLIENT_RESOURCES, "models", CODEC, entries));
+		dataGenerator.addProvider(event.includeClient(), new JsonDataProvider<SimpleModel>(
+			dataGenerator.getPackOutput(),
+			dataGenerator,
+			PackOutput.Target.RESOURCE_PACK,
+			"models",
+			CODEC,
+			entries));
 	}
 
 	/**

@@ -26,15 +26,16 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod.EventBusSubscriber;
+import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
+import net.neoforged.fml.javafmlmod.FMLModContainer;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * Example of using BlockStateFile and SimpleModel to datagen blockstate and model files
@@ -44,12 +45,12 @@ public class BlockStateDataGenExampleMod
 {
 	private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, DataBuddyExampleMod.MODID);
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, DataBuddyExampleMod.MODID);
-	private static final RegistryObject<Block> RANDOM_SPONGE = BLOCKS.register("random_sponge", () ->
+	private static final DeferredHolder<Block,Block> RANDOM_SPONGE = BLOCKS.register("random_sponge", () ->
 		new Block(BlockBehaviour.Properties.of()));
-	private static final RegistryObject<SlabBlock> SPONGE_SLAB = BLOCKS.register("sponge_slab", () ->
+	private static final DeferredHolder<Block,SlabBlock> SPONGE_SLAB = BLOCKS.register("sponge_slab", () ->
 		new SlabBlock(BlockBehaviour.Properties.of()));
-	private static final RegistryObject<RedStoneWireBlock> WHITESTONE_DUST = BLOCKS.register("whitestone_wire", () ->
-		new RedStoneWireBlock(BlockBehaviour.Properties.copy(Blocks.REDSTONE_WIRE)));
+	private static final DeferredHolder<Block,RedStoneWireBlock> WHITESTONE_DUST = BLOCKS.register("whitestone_wire", () ->
+		new RedStoneWireBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WIRE)));
 	
 	static
 	{
@@ -64,7 +65,7 @@ public class BlockStateDataGenExampleMod
 	@SubscribeEvent
 	public static void onModConstruction(FMLConstructModEvent event)
 	{
-		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+		IEventBus modBus = ((FMLModContainer)(ModList.get().getModContainerById(DataBuddyExampleMod.MODID).get())).getEventBus();
 		BLOCKS.register(modBus);
 		ITEMS.register(modBus);
 	}

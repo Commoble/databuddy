@@ -3,7 +3,7 @@ plugins {
 	id 'eclipse'
 	id 'idea'
 	id 'maven-publish'
-	id 'net.neoforged.gradle.userdev' version "${ng_version}"
+	id 'net.neoforged.gradle.userdev' version "7.0.+"
 }
 
 version = "${mod_version}"
@@ -16,7 +16,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 sourceSets {
 	main
-	examplemod
+	examplemod { runs { modIdentifier "databuddy" } }
 	generated
 	test
 }
