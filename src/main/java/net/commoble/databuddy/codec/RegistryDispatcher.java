@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
  */
-package commoble.databuddy.codec;
+package net.commoble.databuddy.codec;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

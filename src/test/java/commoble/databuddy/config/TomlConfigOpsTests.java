@@ -13,7 +13,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import commoble.databuddy.config.ConfigHelper.TomlConfigOps;
+import net.commoble.databuddy.config.ConfigHelper.TomlConfigOps;
 
 public class TomlConfigOpsTests
 {

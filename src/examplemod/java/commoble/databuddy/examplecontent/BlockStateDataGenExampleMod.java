@@ -4,15 +4,15 @@ import java.util.HashMap;
 
 import com.mojang.serialization.JsonOps;
 
-import commoble.databuddy.datagen.BlockStateFile;
-import commoble.databuddy.datagen.BlockStateFile.Case;
-import commoble.databuddy.datagen.BlockStateFile.Model;
-import commoble.databuddy.datagen.BlockStateFile.Multipart;
-import commoble.databuddy.datagen.BlockStateFile.OrCase;
-import commoble.databuddy.datagen.BlockStateFile.PropertyValue;
-import commoble.databuddy.datagen.BlockStateFile.Variants;
-import commoble.databuddy.datagen.BlockStateFile.WhenApply;
-import commoble.databuddy.datagen.SimpleModel;
+import net.commoble.databuddy.datagen.BlockStateFile;
+import net.commoble.databuddy.datagen.SimpleModel;
+import net.commoble.databuddy.datagen.BlockStateFile.Case;
+import net.commoble.databuddy.datagen.BlockStateFile.Model;
+import net.commoble.databuddy.datagen.BlockStateFile.Multipart;
+import net.commoble.databuddy.datagen.BlockStateFile.OrCase;
+import net.commoble.databuddy.datagen.BlockStateFile.PropertyValue;
+import net.commoble.databuddy.datagen.BlockStateFile.Variants;
+import net.commoble.databuddy.datagen.BlockStateFile.WhenApply;
 import net.minecraft.Util;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.core.registries.Registries;

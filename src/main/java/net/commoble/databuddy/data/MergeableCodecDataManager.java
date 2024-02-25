@@ -24,7 +24,7 @@ SOFTWARE.
 
  */
 
-package commoble.databuddy.data;
+package net.commoble.databuddy.data;
 
 import java.io.Reader;
 import java.util.ArrayList;

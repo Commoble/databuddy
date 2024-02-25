@@ -24,7 +24,7 @@ SOFTWARE.
 
  */
 
-package commoble.databuddy.codec;
+package net.commoble.databuddy.codec;
 
 import java.util.Optional;
 

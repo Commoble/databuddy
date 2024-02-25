@@ -12,6 +12,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import net.commoble.databuddy.codec.NullableFieldCodec;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 

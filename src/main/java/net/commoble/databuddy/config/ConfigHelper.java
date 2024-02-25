@@ -21,7 +21,7 @@ SOFTWARE.
 // DataFixerUpper is Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
 */
 
-package commoble.databuddy.config;
+package net.commoble.databuddy.config;
 
 import java.time.temporal.Temporal;
 import java.util.ArrayList;

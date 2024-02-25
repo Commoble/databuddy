@@ -6,7 +6,7 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import commoble.databuddy.data.MergeableCodecDataManager;
+import net.commoble.databuddy.data.MergeableCodecDataManager;
 import net.minecraft.resources.ResourceLocation;
 
 public class FlavorTags

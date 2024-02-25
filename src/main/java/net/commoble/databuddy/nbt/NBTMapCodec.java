@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
  */
-package commoble.databuddy.nbt;
+package net.commoble.databuddy.nbt;
 
 import java.util.HashMap;
 import java.util.Map;

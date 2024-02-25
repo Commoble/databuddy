@@ -9,7 +9,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 
-import commoble.databuddy.codec.RegistryDispatcher;
+import net.commoble.databuddy.codec.RegistryDispatcher;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;

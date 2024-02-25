@@ -24,7 +24,7 @@ SOFTWARE.
  */
 
 
-package commoble.databuddy.nbt;
+package net.commoble.databuddy.nbt;
 
 import java.util.ArrayList;
 import java.util.List;

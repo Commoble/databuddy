@@ -12,6 +12,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import net.commoble.databuddy.codec.WriteFieldsFirstOps;
+
 public class WriteFieldsFirstOpsTest
 {
 	private static interface StringProviderType extends Supplier<Codec<? extends StringProvider>>

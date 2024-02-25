@@ -29,7 +29,7 @@ THE SOFTWARE.
  * 
  */
 
-package commoble.databuddy.plugin;
+package net.commoble.databuddy.plugin;
 
 import java.util.ArrayList;
 import java.util.List;

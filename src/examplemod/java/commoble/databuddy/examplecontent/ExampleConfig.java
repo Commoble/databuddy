@@ -6,8 +6,8 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import commoble.databuddy.config.ConfigHelper;
-import commoble.databuddy.config.ConfigHelper.ConfigObject;
+import net.commoble.databuddy.config.ConfigHelper;
+import net.commoble.databuddy.config.ConfigHelper.ConfigObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.ModConfigSpec;
