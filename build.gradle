@@ -18,7 +18,6 @@ sourceSets {
 	main
 	examplemod { runs { modIdentifier "databuddy" } }
 	generated
-	test
 }
 
 
