@@ -45,10 +45,9 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DataResult.PartialResult;
 import com.mojang.serialization.DynamicOps;
 
-import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
@@ -66,6 +65,7 @@ public class ConfigHelper
 	/**
 	 * Register a config using a default config filename for your mod.
 	 * @param <T> The class of your config implementation
+	 * @param modid String of your modid
 	 * @param configType Forge config type:
 	 * <ul>
 	 * <li>SERVER configs are defined by the server and synced to clients; individual configs are generated per-save. Filename will be modid-server.toml
@@ -76,15 +76,17 @@ public class ConfigHelper
 	 * @return An instance of your config class
 	 */
 	public static <T> T register(
+		final String modid,
 		final ModConfig.Type configType,
 		final Function<ModConfigSpec.Builder, T> configFactory)
 	{
-		return register(configType, configFactory, null);
+		return register(modid, configType, configFactory, null);
 	}
 	
 	/**
 	 * Register a config using a custom filename.
 	 * @param <T> Your config class
+	 * @param modid String of your modid
 	 * @param configType Forge config type:
 	 * <ul>
 	 * <li>SERVER configs are defined by the server and synced to clients; individual configs are generated per-save.
@@ -96,22 +98,23 @@ public class ConfigHelper
 	 * @return An instance of your config class
 	 */
 	public static <T> T register(
+		final String modid,
 		final ModConfig.Type configType,
 		final Function<ModConfigSpec.Builder, T> configFactory,
 		final @Nullable String configName)
 	{
-		final ModLoadingContext modContext = ModLoadingContext.get();
+		final var mod = ModList.get().getModContainerById(modid).get();
 		final org.apache.commons.lang3.tuple.Pair<T, ModConfigSpec> entry = new ModConfigSpec.Builder()
 			.configure(configFactory);
 		final T config = entry.getLeft();
 		final ModConfigSpec spec = entry.getRight();
 		if (configName == null)
 		{
-			modContext.registerConfig(configType,spec);
+			mod.registerConfig(configType,spec);
 		}
 		else
 		{
-			modContext.registerConfig(configType, spec, configName + ".toml");
+			mod.registerConfig(configType, spec, configName + ".toml");
 		}
 		
 		return config;
@@ -131,7 +134,7 @@ public class ConfigHelper
 	public static <T> ConfigObject<T> defineObject(ModConfigSpec.Builder builder, String name, Codec<T> codec, T defaultObject)
 	{
 		DataResult<Object> encodeResult = codec.encodeStart(TomlConfigOps.INSTANCE, defaultObject);
-		Object encodedObject = encodeResult.getOrThrow(false, s -> LOGGER.error("Unable to encode default value: {}", s));
+		Object encodedObject = encodeResult.getOrThrow(s -> new IllegalArgumentException(String.format("Unable to encode default value %s: %s", defaultObject, s)));
 		ConfigValue<Object> value = builder.define(name, encodedObject);
 		return new ConfigObject<>(value, codec, defaultObject, encodedObject);
 	}
@@ -188,7 +191,7 @@ public class ConfigHelper
 		private T getReparsedObject(Object obj)
 		{
 			DataResult<T> parseResult = this.codec.parse(TomlConfigOps.INSTANCE, obj);
-			return parseResult.get().map(
+			return parseResult.mapOrElse(
 				result -> result,
 				failure ->
 				{
@@ -346,7 +349,7 @@ public class ConfigHelper
 				return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
 			}
 			DataResult<String> stringResult = this.getStringValue(key);
-			Optional<PartialResult<String>> badResult = stringResult.error();
+			Optional<DataResult.Error<String>> badResult = stringResult.error();
 			if (badResult.isPresent())
 			{
 				return DataResult.error(() -> "key is not a string: " + key, map);
@@ -379,7 +382,7 @@ public class ConfigHelper
 		public Object createMap(Stream<Pair<Object, Object>> map)
 		{
 			final Config result = TomlFormat.newConfig();
-			map.forEach(p -> result.add(this.getStringValue(p.getFirst()).getOrThrow(false, s -> {}), p.getSecond()));
+			map.forEach(p -> result.add(this.getStringValue(p.getFirst()).getOrThrow(), p.getSecond()));
 			return result;
 		}
 

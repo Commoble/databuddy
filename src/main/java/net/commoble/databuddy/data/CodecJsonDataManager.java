@@ -26,7 +26,6 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.PacketDistributor.PacketTarget;
 
 /**
  * Codec-based data manager for loading data.
@@ -135,10 +134,14 @@ public class CodecJsonDataManager<K,V> extends SimpleJsonResourceReloadListener
 		Consumer<OnDatapackSyncEvent> syncEventHandler = event -> {
 			ServerPlayer player = event.getPlayer();
 			PACKET packet = packetFactory.apply(this.data);
-			PacketTarget target = player == null
-				? PacketDistributor.ALL.noArg()
-				: PacketDistributor.PLAYER.with(player);
-			target.send(packet);
+			if (player == null)
+			{
+				PacketDistributor.sendToAllPlayers(packet);
+			}
+			else
+			{
+				PacketDistributor.sendToPlayer(player, packet);
+			}
 		};
 		NeoForge.EVENT_BUS.addListener(syncEventHandler);
 		return this;

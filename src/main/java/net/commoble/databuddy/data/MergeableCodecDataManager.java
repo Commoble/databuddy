@@ -53,7 +53,6 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.PacketDistributor.PacketTarget;
 /**
  * Generic data loader for Codec-parsable data.
  * This works best if initialized during your mod's construction.
@@ -119,7 +118,7 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 			List<RAW> raws = new ArrayList<>();
 			ResourceLocation fullId = entry.getKey();
 			String fullPath = fullId.getPath(); // includes folderName/ and .json
-			ResourceLocation id = new ResourceLocation(
+			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
 				fullId.getNamespace(),
 				fullPath.substring(this.folderName.length() + 1, fullPath.length() - JSON_EXTENSION_LENGTH));
 			
@@ -164,10 +163,14 @@ public class MergeableCodecDataManager<RAW, FINE> extends SimplePreparableReload
 		Consumer<OnDatapackSyncEvent> syncEventHandler = event -> {
 			ServerPlayer player = event.getPlayer();
 			PACKET packet = packetFactory.apply(this.data);
-			PacketTarget target = player == null
-				? PacketDistributor.ALL.noArg()
-				: PacketDistributor.PLAYER.with(player);
-			target.send(packet);
+			if (player == null)
+			{
+				PacketDistributor.sendToAllPlayers(packet);
+			}
+			else
+			{
+				PacketDistributor.sendToPlayer(player, packet);
+			}
 		};
 		NeoForge.EVENT_BUS.addListener(syncEventHandler);
 		return this;

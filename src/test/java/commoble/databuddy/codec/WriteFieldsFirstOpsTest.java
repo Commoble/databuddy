@@ -10,13 +10,14 @@ import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.commoble.databuddy.codec.WriteFieldsFirstOps;
 
 public class WriteFieldsFirstOpsTest
 {
-	private static interface StringProviderType extends Supplier<Codec<? extends StringProvider>>
+	private static interface StringProviderType extends Supplier<MapCodec<? extends StringProvider>>
 	{
 		public static final Codec<StringProviderType> CODEC = Codec.STRING.xmap(STRING_PROVIDERS::get, provider -> STRING_PROVIDERS.inverse().get(provider));
 	}
@@ -27,7 +28,7 @@ public class WriteFieldsFirstOpsTest
 	}
 	private static record String2String(String s) implements StringProvider
 	{
-		private static final Codec<String2String> CODEC = Codec.STRING.xmap(String2String::new, String2String::s).fieldOf("a").codec();
+		private static final MapCodec<String2String> CODEC = Codec.STRING.fieldOf("a").xmap(String2String::new, String2String::s);
 
 		@Override
 		public String get()
@@ -42,7 +43,7 @@ public class WriteFieldsFirstOpsTest
 	}
 	private static record Int2String(int i) implements StringProvider
 	{
-		private static final Codec<Int2String> CODEC = Codec.INT.xmap(Int2String::new, Int2String::i).fieldOf("b").codec();
+		private static final MapCodec<Int2String> CODEC = Codec.INT.fieldOf("b").xmap(Int2String::new, Int2String::i);
 		@Override
 		public String get()
 		{
@@ -56,7 +57,7 @@ public class WriteFieldsFirstOpsTest
 	}
 	private static record Bool2String(boolean b) implements StringProvider
 	{
-		private static final Codec<Bool2String> CODEC = Codec.BOOL.xmap(Bool2String::new, Bool2String::b).fieldOf("c").codec();
+		private static final MapCodec<Bool2String> CODEC = Codec.BOOL.fieldOf("c").xmap(Bool2String::new, Bool2String::b);
 		@Override
 		public String get()
 		{

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import com.mojang.serialization.JsonOps;
 
 import net.commoble.databuddy.datagen.BlockStateFile;
-import net.commoble.databuddy.datagen.SimpleModel;
 import net.commoble.databuddy.datagen.BlockStateFile.Case;
 import net.commoble.databuddy.datagen.BlockStateFile.Model;
 import net.commoble.databuddy.datagen.BlockStateFile.Multipart;
@@ -13,6 +12,7 @@ import net.commoble.databuddy.datagen.BlockStateFile.OrCase;
 import net.commoble.databuddy.datagen.BlockStateFile.PropertyValue;
 import net.commoble.databuddy.datagen.BlockStateFile.Variants;
 import net.commoble.databuddy.datagen.BlockStateFile.WhenApply;
+import net.commoble.databuddy.datagen.SimpleModel;
 import net.minecraft.Util;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.core.registries.Registries;
@@ -29,8 +29,8 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
 import net.neoforged.fml.javafmlmod.FMLModContainer;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -72,16 +72,16 @@ public class BlockStateDataGenExampleMod
 	@SubscribeEvent
 	public static void onGatherData(GatherDataEvent event)
 	{
-		ResourceLocation blockSpongeSlab = new ResourceLocation(DataBuddyExampleMod.MODID, "block/sponge_slab");
-		ResourceLocation blockSpongeSlabTop = new ResourceLocation(DataBuddyExampleMod.MODID, "block/sponge_slab_top");
-		ResourceLocation blockSlab = new ResourceLocation("block/slab");
-		ResourceLocation blockSlabTop = new ResourceLocation("block/slab_top");
-		ResourceLocation blockSponge = new ResourceLocation("block/sponge");
-		ResourceLocation itemRandomSponge = new ResourceLocation(DataBuddyExampleMod.MODID, "item/random_sponge");
-		ResourceLocation itemSpongeSlab = new ResourceLocation(DataBuddyExampleMod.MODID, "item/sponge_slab");
-		ResourceLocation itemWhitestone = new ResourceLocation(DataBuddyExampleMod.MODID, "item/whitestone");
-		ResourceLocation itemGenerated = new ResourceLocation("item/generated");
-		ResourceLocation itemRedstone = new ResourceLocation("item/redstone");
+		ResourceLocation blockSpongeSlab = ResourceLocation.fromNamespaceAndPath(DataBuddyExampleMod.MODID, "block/sponge_slab");
+		ResourceLocation blockSpongeSlabTop = ResourceLocation.fromNamespaceAndPath(DataBuddyExampleMod.MODID, "block/sponge_slab_top");
+		ResourceLocation blockSlab = ResourceLocation.withDefaultNamespace("block/slab");
+		ResourceLocation blockSlabTop = ResourceLocation.withDefaultNamespace("block/slab_top");
+		ResourceLocation blockSponge = ResourceLocation.withDefaultNamespace("block/sponge");
+		ResourceLocation itemRandomSponge = ResourceLocation.fromNamespaceAndPath(DataBuddyExampleMod.MODID, "item/random_sponge");
+		ResourceLocation itemSpongeSlab = ResourceLocation.fromNamespaceAndPath(DataBuddyExampleMod.MODID, "item/sponge_slab");
+		ResourceLocation itemWhitestone = ResourceLocation.fromNamespaceAndPath(DataBuddyExampleMod.MODID, "item/whitestone");
+		ResourceLocation itemGenerated = ResourceLocation.withDefaultNamespace("item/generated");
+		ResourceLocation itemRedstone = ResourceLocation.withDefaultNamespace("item/redstone");
 	
 		// model generation example
 		SimpleModel.addDataProvider(event, DataBuddyExampleMod.MODID, JsonOps.INSTANCE, Util.make(new HashMap<ResourceLocation, SimpleModel>(), map ->
@@ -152,31 +152,31 @@ public class BlockStateDataGenExampleMod
 							.addCase(Case.builder()
 								.addCondition(RedStoneWireBlock.NORTH, RedstoneSide.SIDE, RedstoneSide.UP)
 								.addCondition(RedStoneWireBlock.WEST, RedstoneSide.SIDE, RedstoneSide.UP)),
-						Model.create(new ResourceLocation("block/redstone_dust_dot"))))
+						Model.create(ResourceLocation.withDefaultNamespace("block/redstone_dust_dot"))))
 					.addWhenApply(WhenApply.when(
 						Case.create(RedStoneWireBlock.NORTH, RedstoneSide.SIDE, RedstoneSide.UP),
-						Model.create(new ResourceLocation("block/redstone_dust_side0"))))
+						Model.create(ResourceLocation.withDefaultNamespace("block/redstone_dust_side0"))))
 					.addWhenApply(WhenApply.when(
 						Case.create(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE, RedstoneSide.UP),
-						Model.create(new ResourceLocation("block/redstone_dust_side_alt0"))))
+						Model.create(ResourceLocation.withDefaultNamespace("block/redstone_dust_side_alt0"))))
 					.addWhenApply(WhenApply.when(
 						Case.create(RedStoneWireBlock.EAST, RedstoneSide.SIDE, RedstoneSide.UP),
-						Model.create(new ResourceLocation("block/redstone_dust_side_alt1"), BlockModelRotation.X0_Y270)))
+						Model.create(ResourceLocation.withDefaultNamespace("block/redstone_dust_side_alt1"), BlockModelRotation.X0_Y270)))
 					.addWhenApply(WhenApply.when(
 						Case.create(RedStoneWireBlock.WEST, RedstoneSide.SIDE, RedstoneSide.UP),
-						Model.create(new ResourceLocation("block/redstone_dust_side1"), BlockModelRotation.X0_Y270)))
+						Model.create(ResourceLocation.withDefaultNamespace("block/redstone_dust_side1"), BlockModelRotation.X0_Y270)))
 					.addWhenApply(WhenApply.when(
 						Case.create(RedStoneWireBlock.NORTH, RedstoneSide.UP),
-						Model.create(new ResourceLocation("block/redstone_dust_up"))))
+						Model.create(ResourceLocation.withDefaultNamespace("block/redstone_dust_up"))))
 					.addWhenApply(WhenApply.when(
 						Case.create(RedStoneWireBlock.EAST, RedstoneSide.UP),
-						Model.create(new ResourceLocation("block/redstone_dust_up"), BlockModelRotation.X0_Y90)))
+						Model.create(ResourceLocation.withDefaultNamespace("block/redstone_dust_up"), BlockModelRotation.X0_Y90)))
 					.addWhenApply(WhenApply.when(
 						Case.create(RedStoneWireBlock.SOUTH, RedstoneSide.UP),
-						Model.create(new ResourceLocation("block/redstone_dust_up"), BlockModelRotation.X0_Y180)))
+						Model.create(ResourceLocation.withDefaultNamespace("block/redstone_dust_up"), BlockModelRotation.X0_Y180)))
 					.addWhenApply(WhenApply.when(
 						Case.create(RedStoneWireBlock.WEST, RedstoneSide.UP),
-						Model.create(new ResourceLocation("block/redstone_dust_up"), BlockModelRotation.X0_Y270)))));
+						Model.create(ResourceLocation.withDefaultNamespace("block/redstone_dust_up"), BlockModelRotation.X0_Y270)))));
 			
 		}));
 	}

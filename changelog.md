@@ -1,3 +1,10 @@
+# 6.0.0.0
+* Updated to MC 1.21 / Neoforge 21.0.40-beta
+* Removed NullableFieldCodec as DFU optional fields now similarly will not silently ignore parse failures
+* RegistryDispatcher no longer accepts a mod bus to create a registry dispatcher; it uses the mod bus of the modid matching the registry namespace
+* RegistryDispatcher now creates a registry of mapcodecs instead of codecs
+* ConfigHelper#register now requires a modid
+
 # 5.0.0.0
 * Updated to MC 1.20.4 / Neoforge 20.4.167. Some APIs have received undocumented changes as a result of this.
 * Moved all packages to the net.commoble domain

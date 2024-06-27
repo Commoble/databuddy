@@ -46,7 +46,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.neoforged.neoforge.common.data.JsonCodecProvider;
@@ -122,7 +121,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 		/** codec **/
 		public static final Codec<Variants> CODEC = Codec.unboundedMap(
 				PropertyValue.LIST_CODEC,
-				new ExtraCodecs.EitherCodec<>(Model.CODEC, Model.CODEC.listOf()).xmap(
+				Codec.either(Model.CODEC, Model.CODEC.listOf()).xmap(
 					either -> either.map(List::of, Function.identity()),
 					list -> list.size() == 1 ? Either.left(list.get(0)) : Either.right(list)))
 			.xmap(Variants::new, Variants::variants);
@@ -385,7 +384,7 @@ public record BlockStateFile(Optional<Variants> variants, Optional<Multipart> mu
 	{
 		/** codec **/
 		public static final Codec<OrCase> CODEC =
-			Codec.either(ExtraCodecs.lazyInitializedCodec(() -> OrCase.CODEC), Case.CODEC)
+			Codec.either(Codec.lazyInitialized(() -> OrCase.CODEC), Case.CODEC)
 				.listOf().fieldOf("OR").codec()
 				.xmap(OrCase::new, OrCase::cases);
 		

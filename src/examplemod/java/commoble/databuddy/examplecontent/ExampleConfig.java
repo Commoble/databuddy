@@ -42,9 +42,9 @@ public record ExampleConfig(
 		ConfigObject<TestObject> testObject = ConfigHelper.defineObject(builder, "testObject", TestObject.CODEC,
 			new TestObject(new BlockPos(3,9,-41),
 				Lists.newArrayList(
-					new ResourceLocation("minecraft:dirt"),
-					new ResourceLocation("minecraft:clay"),
-					new ResourceLocation("minecraft:iron")),
+					ResourceLocation.withDefaultNamespace("dirt"),
+					ResourceLocation.withDefaultNamespace("clay"),
+					ResourceLocation.withDefaultNamespace("iron")),
 					true));
 		
 		builder.comment("Empty list");

@@ -127,14 +127,14 @@ public record SimpleModel(ResourceLocation parent, Map<String, ResourceLocation>
 	public static class RenderTypes
 	{
 		/** Vanilla solid render type, no transparency **/
-		public static final ResourceLocation SOLID = new ResourceLocation("solid");
+		public static final ResourceLocation SOLID = ResourceLocation.withDefaultNamespace("solid");
 		/** Vanilla cutout render type, all-or-nothing transparency **/
-		public static final ResourceLocation CUTOUT = new ResourceLocation("cutout");
+		public static final ResourceLocation CUTOUT = ResourceLocation.withDefaultNamespace("cutout");
 		/** Vanilla cutout_mipped render type, all-or-nothing transparency and mipmapping **/ 
-		public static final ResourceLocation CUTOUT_MIPPED = new ResourceLocation("cutout_mipped");
+		public static final ResourceLocation CUTOUT_MIPPED = ResourceLocation.withDefaultNamespace("cutout_mipped");
 		/** Vanilla translucent render type, allows partial transparency **/
-		public static final ResourceLocation TRANSLUCENT = new ResourceLocation("translucent");
+		public static final ResourceLocation TRANSLUCENT = ResourceLocation.withDefaultNamespace("translucent");
 		/** Vanilla tripwire render type, similar to translucent but uses the tripwire shader **/
-		public static final ResourceLocation TRIPWIRE = new ResourceLocation("tripwire");
+		public static final ResourceLocation TRIPWIRE = ResourceLocation.withDefaultNamespace("tripwire");
 	}
 }

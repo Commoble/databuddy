@@ -12,7 +12,7 @@ base {
 	archivesName = "${modid}-${mc_version}"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets {
 	main
@@ -34,7 +34,7 @@ configurations {
 runs {
 	configureEach {
 		systemProperty 'forge.logging.console.level', 'debug'
-		modSources.addAll project.sourceSets.main, project.sourceSets.examplemod
+		modSources.add project.sourceSets.main, project.sourceSets.examplemod
 	}
 
 	client {

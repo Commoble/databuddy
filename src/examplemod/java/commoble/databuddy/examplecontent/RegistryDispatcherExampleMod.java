@@ -6,23 +6,21 @@ import org.apache.logging.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 
 import net.commoble.databuddy.codec.RegistryDispatcher;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
-import net.neoforged.fml.javafmlmod.FMLModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /*
  * Example of using RegistryDispatcher to make serializer registries
  */
-@EventBusSubscriber(modid=DataBuddyExampleMod.MODID, bus=Bus.FORGE)
+@EventBusSubscriber(modid=DataBuddyExampleMod.MODID, bus=Bus.GAME)
 public class RegistryDispatcherExampleMod
 {
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -30,19 +28,18 @@ public class RegistryDispatcherExampleMod
 	// The RegistryDispatcher contains the codec for your data class and the deferred register for your serializers.
 	// The DeferredRegister will be automatically registered and a forge registry will be created and registered.
 	public static final RegistryDispatcher<Cheese> CHEESE_DISPATCHER = RegistryDispatcher.makeDispatchForgeRegistry(
-		((FMLModContainer)(ModList.get().getModContainerById(DataBuddyExampleMod.MODID).get())).getEventBus(),
-		new ResourceLocation(DataBuddyExampleMod.MODID, "cheese"),
+		ResourceLocation.fromNamespaceAndPath(DataBuddyExampleMod.MODID, "cheese"),
 		cheese -> cheese.getType(), // using a method reference here seems to confuse eclipse
 		builder->{});
 	
 	// RegistryObjects can be created from the dispatcher's deferred registry
-	public static final DeferredHolder<Codec<? extends Cheese>, Codec<Cheddar>> CHEDDAR = CHEESE_DISPATCHER.defreg()
-		.register("cheddar", () -> Codec.unit(new Cheddar()));
+	public static final DeferredHolder<MapCodec<? extends Cheese>, MapCodec<Cheddar>> CHEDDAR = CHEESE_DISPATCHER.defreg()
+		.register("cheddar", () -> MapCodec.unit(new Cheddar()));
 	
 	// Base class for your data classes, instances of this could potentially be parsed from jsons or whatever
 	public static interface Cheese
 	{
-		public Codec<? extends Cheese> getType();
+		public MapCodec<? extends Cheese> getType();
 		public int color();
 	}
 	
@@ -66,7 +63,7 @@ public class RegistryDispatcherExampleMod
 	public static class Cheddar implements Cheese
 	{
 		@Override
-		public Codec<? extends Cheese> getType()
+		public MapCodec<? extends Cheese> getType()
 		{
 			return RegistryDispatcherExampleMod.CHEDDAR.get();
 		}

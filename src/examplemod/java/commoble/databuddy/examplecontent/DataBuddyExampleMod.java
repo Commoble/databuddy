@@ -13,7 +13,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 @Mod(DataBuddyExampleMod.MODID)
 public class DataBuddyExampleMod
@@ -32,11 +32,14 @@ public class DataBuddyExampleMod
 		
 		// create and subscribe our config instances
 		this.config = ConfigHelper.register(
+			MODID,
 			ModConfig.Type.COMMON, ExampleConfig::create);
 		// example of specifying the config name to create subfolders
 		this.firstConfig = ConfigHelper.register(
+			MODID,
 			ModConfig.Type.COMMON, ExampleConfig::create, "databuddy/first");
 		this.secondConfig = ConfigHelper.register(
+			MODID,
 			ModConfig.Type.COMMON, ExampleConfig::create, "databuddy/secondconfig");
 		
 		// subscribe to events
@@ -47,10 +50,10 @@ public class DataBuddyExampleMod
 		FlavorTags.DATA_LOADER.subscribeAsSyncable(FlavorTagSyncPacket::new);
 	}
 	
-	void onRegisterPackets(RegisterPayloadHandlerEvent event)
+	void onRegisterPackets(RegisterPayloadHandlersEvent event)
 	{
 		event.registrar(MODID)
-			.<FlavorTagSyncPacket>play(FlavorTagSyncPacket.ID, FlavorTagSyncPacket::decode, FlavorTagSyncPacket::onPacketReceived);
+			.<FlavorTagSyncPacket>playToClient(FlavorTagSyncPacket.ID, FlavorTagSyncPacket.STREAM_CODEC, FlavorTagSyncPacket::onPacketReceived);
 	}
 	
 	// register our data loader to the server
