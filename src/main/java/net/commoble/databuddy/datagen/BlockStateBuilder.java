@@ -99,6 +99,7 @@ public final class BlockStateBuilder
 	 *     "": {"model": "foo:bar"}
 	 * 	}
 	 * }
+	 * }
 	 */
 	public static BlockModelDefinition singleVariant(BlockStateModel.Unbaked model)
 	{
@@ -114,6 +115,7 @@ public final class BlockStateBuilder
 	 *    "powered=false": {"model": "foo:bar"},
 	 *    "powered=true": {"model": "foo:bar_powered"}
 	 *  }
+	 * }
 	 * }
 	 */
 	public static BlockModelDefinition variants(Consumer<Variants> variantsBuilder)
@@ -134,7 +136,8 @@ public final class BlockStateBuilder
 	 *       "apply": {"model": "foo:bar"}
 	 *     }
 	 *   ]
-	 * } 
+	 * }
+	 * }
 	 */
 	public static BlockModelDefinition multipart(Consumer<Multipart> multipartBuilder)
 	{
@@ -220,7 +223,7 @@ public final class BlockStateBuilder
 	
 	/**
 	 * {@return new Unbaked BlockStateModel for random selection from a list of two or more Weighted models (e.g. like how stone is)}
-	 * @param firstModel Weighted BlockStateModel.Unbaked, e.g. new Weighted<>(BlockStateBuilder.model(ResourceLocation.fromNamespaceAndPath("foo","bar")), 1)
+	 * @param firstModel Weighted BlockStateModel.Unbaked, e.g. new Weighted(BlockStateBuilder.model(ResourceLocation.fromNamespaceAndPath("foo","bar")), 1)
 	 * @param secondModel another weighted model
 	 * @param additionalModels more weighted models as needed
 	 */
@@ -373,7 +376,9 @@ public final class BlockStateBuilder
 	 *       "when": {"powered": "false", "lit": "true"},
 	 *       "apply": {"model": "foo:bar_lit"}
 	 *     }
-	 * 
+	 *   ]
+	 * }
+	 * }
 	 * @param cases List of when-apply components.
 	 */
 	public static record Multipart(List<WhenApply> cases)
