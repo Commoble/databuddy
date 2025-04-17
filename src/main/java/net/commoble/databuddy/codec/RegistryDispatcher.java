@@ -36,7 +36,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.javafmlmod.FMLModContainer;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
@@ -73,20 +72,17 @@ public record RegistryDispatcher<T>(Codec<MapCodec<? extends T>> dispatcherCodec
 		final Consumer<RegistryBuilder<MapCodec<? extends T>>> extraSettings)
 	{
 		String modid = registryId.getNamespace();
-		IEventBus modBus = ((FMLModContainer)(ModList.get().getModContainerById(modid).get())).getEventBus();
+		IEventBus modBus = ModList.get().getModContainerById(modid).get().getEventBus();
 		DeferredRegister<MapCodec<? extends T>> deferredRegister = DeferredRegister.create(registryId, registryId.getNamespace());
 		Registry<MapCodec<? extends T>> registry = deferredRegister.makeRegistry(extraSettings);
-		Codec<MapCodec<? extends T>> dispatcherCodec = ResourceLocation.CODEC.flatXmap(
+		Codec<MapCodec<? extends T>> dispatcherCodec = ResourceLocation.CODEC.<MapCodec<? extends T>>flatXmap(
 			id -> {
 				boolean hasKey = registry.containsKey(id);
 				if (hasKey)
 				{
-					var value = registry.get(id);
-					if (value != null)
-					{
-						return DataResult.success(value);
-					}
-					return DataResult.error(() -> String.format("Registry %s contains null value for %s", registryId, id));
+					return registry.get(id)
+						.map(holder -> DataResult.success(holder.value()))
+						.orElseGet(() -> DataResult.error(() -> String.format("Registry %s does not contain %s", registryId, id)));
 				}
 				return DataResult.error(() -> String.format("Registry %s does not contain %s", registryId, id));
 			},

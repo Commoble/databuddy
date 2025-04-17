@@ -1,4 +1,4 @@
-package commoble.databuddy.examplecontent;
+package net.commoble.databuddy.examplecontent;
 
 import java.util.function.Consumer;
 
@@ -6,11 +6,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.commoble.databuddy.config.ConfigHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -63,9 +64,9 @@ public class DataBuddyExampleMod
 	// note that for data that needs to be on the client as well (e.g. recipes)
 	// then a syncing packet containing the relevant data should be sent when a player joins or resources are reloaded
 	// (you'd need to implement your own packet at the moment)
-	void onAddReloadListeners(AddReloadListenerEvent event)
+	void onAddReloadListeners(AddServerReloadListenersEvent event)
 	{
-		event.addListener(FlavorTags.DATA_LOADER);
+		event.addListener(ResourceLocation.fromNamespaceAndPath(MODID, "flavor_tags"), FlavorTags.DATA_LOADER);
 	}
 	
 	void testData(PlayerInteractEvent.RightClickBlock event)

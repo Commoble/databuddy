@@ -34,7 +34,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.NamedRenderTypeManager;
@@ -66,14 +65,7 @@ public record SimpleModel(ResourceLocation parent, Map<String, ResourceLocation>
 	 */
 	public static void addDataProvider(GatherDataEvent event, String modid, DynamicOps<JsonElement> dynamicOps, Map<ResourceLocation,SimpleModel> entries)
 	{
-		DataGenerator dataGenerator = event.getGenerator();
-		dataGenerator.addProvider(event.includeClient(), new JsonDataProvider<SimpleModel>(
-			dataGenerator.getPackOutput(),
-			dataGenerator,
-			PackOutput.Target.RESOURCE_PACK,
-			"models",
-			CODEC,
-			entries));
+		JsonDataProvider.addProvider(event, PackOutput.Target.RESOURCE_PACK, "models", CODEC, entries);
 	}
 
 	/**

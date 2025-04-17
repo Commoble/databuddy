@@ -49,8 +49,8 @@ runs {
 		systemProperty 'forge.enabledGameTestNamespaces', project.modid
 	}
 
-	data {
-		programArguments.addAll '--mod', project.modid, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+	clientData {
+		arguments.addAll '--mod', project.modid, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
 	}
 }
 
@@ -61,9 +61,9 @@ dependencies {
 	implementation "net.neoforged:neoforge:${neo_version}"
 	examplemodImplementation sourceSets.main.output
 	
-    implementation group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.7.0'
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+    //implementation group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.7.0'
+	//testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+	//testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 }
 test {
 	useJUnitPlatform()

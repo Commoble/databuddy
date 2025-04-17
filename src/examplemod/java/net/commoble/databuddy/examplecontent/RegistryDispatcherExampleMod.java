@@ -1,4 +1,4 @@
-package commoble.databuddy.examplecontent;
+package net.commoble.databuddy.examplecontent;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

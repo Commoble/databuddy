@@ -32,17 +32,20 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.PathProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 /**
  * Generic data provider that uses DataFixerUpper Codecs to generate jsons from
  * java objects.
- * 
+ * @param registries
+ * 			CompletableFuture providing registries from GatherDataEvent
  * @param packOutput
  * 			PackOutput from DataGenerator#addProvider
  * @param generator
@@ -59,26 +62,61 @@ import net.minecraft.resources.ResourceLocation;
  * @param objects
  *			An ID-to-object map that defines the objects to generate jsons
  *			from and where the jsons will be generated.
+ * @param uniqueName
+ * 			String uniquely identifying this dataprovider (local to your mod)
  */
-public record JsonDataProvider<T>(PackOutput packOutput, DataGenerator generator, PackOutput.Target target, String folder, Codec<T> codec, Map<ResourceLocation,T> objects) implements DataProvider
+public record JsonDataProvider<T>(CompletableFuture<HolderLookup.Provider> registries, PackOutput packOutput, DataGenerator generator, PackOutput.Target target, String folder, Codec<T> codec, Map<ResourceLocation,T> objects, String uniqueName) implements DataProvider
 {
 	private static final Logger LOGGER = LogUtils.getLogger();
+	
+	/**
+	 * Registers a JsonDataProvider to the datagenerator using the provided GatherDataEvent, using the folder name as the unique name of this provider.
+	 * If you have multiple providers for the same folder, use {@link #addNamedProvider} instead
+	 * @param <T> type of things to generate files for
+	 * @param event GatherDataEvent
+	 * @param target DATA_PACK for server data, RESOURCE_PACK for client assets
+	 * @param folder name of the data type folder to write objects to
+	 * @param codec Codec to serialize objects with
+	 * @param objects Objects to write
+	 */
+	public static <T> void addProvider(GatherDataEvent event, PackOutput.Target target, String folder, Codec<T> codec, Map<ResourceLocation,T> objects)
+	{
+		addNamedProvider(event, target, folder, codec, objects, folder);
+	}
+	
+	/**
+	 * Registers a JsonDataProvider to the datagenerator using the provided GatherDataEvent
+	 * @param <T> type of things to generate files for
+	 * @param event GatherDataEvent
+	 * @param target DATA_PACK for server data, RESOURCE_PACK for client assets
+	 * @param folder name of the data type folder to write objects to
+	 * @param codec Codec to serialize objects with
+	 * @param objects Objects to write
+	 * @param name Unique name (within your mod), required by the datagen system.
+	 */
+	public static <T> void addNamedProvider(GatherDataEvent event, PackOutput.Target target, String folder, Codec<T> codec, Map<ResourceLocation,T> objects, String name)
+	{
+		DataGenerator generator = event.getGenerator();
+		event.addProvider(new JsonDataProvider<>(event.getLookupProvider(), generator.getPackOutput(), generator, target, folder, codec, objects, name));
+	}
 	
 	@Override
 	public CompletableFuture<?> run(CachedOutput cache)
 	{
-		PathProvider pathProvider = packOutput.createPathProvider(target, folder);
-		List<CompletableFuture<?>> results = new ArrayList<>();
-		for (var entry : this.objects.entrySet())
-		{
-			var id = entry.getKey();
-			this.codec.encodeStart(JsonOps.INSTANCE, entry.getValue())
-				.resultOrPartial(s -> LOGGER.error("{} failed to encode {}: {}", this.getName(), id, s))
-				.ifPresent(json -> {
-					results.add(DataProvider.saveStable(cache, json, pathProvider.json(id)));
-				});
-		}
-		return CompletableFuture.allOf(results.toArray(CompletableFuture[]::new));
+		return registries.thenCompose(registries -> {
+			PathProvider pathProvider = packOutput.createPathProvider(target, folder);
+			List<CompletableFuture<?>> results = new ArrayList<>();
+			for (var entry : this.objects.entrySet())
+			{
+				var id = entry.getKey();
+				this.codec.encodeStart(registries.createSerializationContext(JsonOps.INSTANCE), entry.getValue())
+					.resultOrPartial(s -> LOGGER.error("{} failed to encode {}: {}", this.getName(), id, s))
+					.ifPresent(json -> {
+						results.add(DataProvider.saveStable(cache, json, pathProvider.json(id)));
+					});
+			}
+			return CompletableFuture.allOf(results.toArray(CompletableFuture[]::new));
+		});
 	}
 
 	/**
@@ -87,7 +125,7 @@ public record JsonDataProvider<T>(PackOutput packOutput, DataGenerator generator
 	@Override
 	public String getName()
 	{
-		return String.format("%s", this.folder);
+		return this.uniqueName();
 	}
 
 }

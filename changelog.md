@@ -1,3 +1,10 @@
+# 7.0.0.0
+* Updated to MC 1.21.5 / Neoforge 21.5.41-beta
+* Removed NBTListCodec/NBTMapCodec due to nbt rewrites and increasing migration to Codecs/StreamCodecs
+* Removed CodecJsonDataManager as SimpleJsonResourceReloadListener is now codec-based and very similarly implemented
+* JsonDataProvider now has static methods that accept a GatherDataEvent and add a provider to the event's datagenerator
+* BlockStateFile has been renamed and rewritten as BlockStateBuilder and is now primarily a helper to build vanilla BlockModelDefinitions
+
 # 6.0.0.0
 * Updated to MC 1.21 / Neoforge 21.0.40-beta
 * Removed NullableFieldCodec as DFU optional fields now similarly will not silently ignore parse failures

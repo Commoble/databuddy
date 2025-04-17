@@ -1,4 +1,4 @@
-package commoble.databuddy.examplecontent;
+package net.commoble.databuddy.examplecontent;
 
 import java.util.HashMap;
 import java.util.List;
