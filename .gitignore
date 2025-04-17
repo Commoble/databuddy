@@ -28,3 +28,5 @@ maven
 forge*changelog.txt
 
 eula.txt
+
+/src/generated/resources/.cache
